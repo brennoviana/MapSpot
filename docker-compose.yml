@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  expo:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: expo-app
+    ports:
+      - '19000:19000'
+      - '19001:19001'
+      - '19002:19002'
+    volumes:
+      - ./frontend:/app
+    command: npx expo start --tunnel
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_PORT=19002
