@@ -1,0 +1,9 @@
+_format_version: "2.1"
+services:
+  - name: node-backend-service
+    url: http://user-service:3000 
+    routes:
+      - name: node-backend-route
+        paths:
+          - /node-backend
+        strip_path: true
