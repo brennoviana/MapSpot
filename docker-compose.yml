@@ -10,35 +10,9 @@ services:
       - '19002:19002'
     volumes:
       - ./frontend:/app
-    command: npx expo start --tunnel
+    command: npx expo start
     environment:
       - EXPO_DEVTOOLS_LISTEN_PORT=19002
-
-  kong:
-    image: kong:latest
-    container_name: kong
-    environment:
-      KONG_DATABASE: 'off'
-      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
-    ports:
-      - '8000:8000'   
-      - '8443:8443'  
-      - '8001:8001'   
-      - '8444:8444'  
-    volumes:
-      - ./backend/api-gateway/kong.yml:/kong/declarative/kong.yml
-    networks:
-          - backend-net
-
-  user-service:
-    build:
-      context: ./backend/services/user
-      dockerfile: Dockerfile
-    container_name: user-service
-    ports:
-      - '3000:3000'
-    networks:
-      - backend-net
 
 networks:
   backend-net:
