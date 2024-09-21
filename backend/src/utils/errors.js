@@ -41,6 +41,12 @@ class AuthenticationError extends AppError {
   }
 }
 
+class UnauthorizedError extends AppError {
+  constructor(message = "Forbidden access") {
+    super(message, 403);
+  }
+}
+
 class DuplicateFieldError extends AppError {
   constructor(field) {
     super(`${field} already exists.`, 409);
@@ -53,5 +59,6 @@ export {
   NotFoundError,
   AuthenticationError,
   DuplicateFieldError,
+  UnauthorizedError,
   ErrorHandler
 };
