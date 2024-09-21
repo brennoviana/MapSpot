@@ -1,25 +1,29 @@
 import { User } from "../model/userModel.js";
 
+import {
+  ValidationError,
+  NotFoundError,
+  ErrorHandler
+} from "../../../../utils/errors.js";
+
 async function validateUserExists(req, res, next) {
   try {
     const userId = req.body.userId || req.params.id;
 
     if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
+      return ErrorHandler.formatResponse(res, new ValidationError("User ID is required."));
     }
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(404).send({ message: "User not found." });
+      return ErrorHandler.formatResponse(res, new NotFoundError("User not found."));
     }
 
     req.user = user;
 
     next();
   } catch (error) {
-    return res
-      .status(500)
-      .send({ message: "An error occurred while verifying the user." });
+    ErrorHandler.formatResponse(res, error);
   }
 }
 

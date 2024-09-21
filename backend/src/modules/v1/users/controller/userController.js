@@ -1,8 +1,11 @@
-import { UniqueConstraintError } from "sequelize";
-import { User } from "../model/userModel.js";
 import bcrypt from "bcryptjs";
+import { UniqueConstraintError } from "sequelize";
 import jwt from "jsonwebtoken";
+
 import { config } from "../../../../config/env/envConfig.js";
+import { User } from "../model/userModel.js";
+
+import { ResponseFormatter } from "../../../../utils/sucess.js";
 import {
   ValidationError,
   NotFoundError,
@@ -17,7 +20,7 @@ class UserController {
       const users = await User.findAll();
 
       if (users.length === 0) {
-        return ErrorHandler.formatReposonse(res, new NotFoundError("No users registered."));
+        return ErrorHandler.formatResponse(res, new NotFoundError("No users registered."));
       }
 
       const usersWithoutPasswords = users.map((user) => {
@@ -25,18 +28,18 @@ class UserController {
         return userWithoutPassword;
       });
 
-      return res.status(200).json(usersWithoutPasswords);
+      return ResponseFormatter.send(res, usersWithoutPasswords, 'Users found successfully.');
     } catch (error) {
-      ErrorHandler.formatReposonse(res, error);
+      ErrorHandler.formatResponse(res, error);
     }
   }
 
   async getUserById(req, res) {
     try {
       const userWithoutPassword = { ...req.user.get(), password: undefined };
-      return res.status(200).json(userWithoutPassword);
+      return ResponseFormatter.send(res, userWithoutPassword, "User retrieved successfully.");
     } catch (error) {
-      ErrorHandler.formatReposonse(res, error);
+      ErrorHandler.formatResponse(res, error);
     }
   }
 
@@ -51,13 +54,13 @@ class UserController {
 
       const userWithoutPassword = { ...newUser.get(), password: undefined };
 
-      return res.status(201).json(userWithoutPassword);
+      return ResponseFormatter.send(res, userWithoutPassword, "User created successfully.", 201);
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
         const duplicateField = error.errors[0].path;
-        return ErrorHandler.formatReposonse(res, new DuplicateFieldError(duplicateField));
+        return ErrorHandler.formatResponse(res, new DuplicateFieldError(duplicateField));
       }
-      ErrorHandler.formatReposonse(res, error);
+      ErrorHandler.formatResponse(res, error);
     }
   }
 
@@ -68,15 +71,15 @@ class UserController {
       });
 
       if (updated) {
-        return res.status(200).send({ message: "User successfully updated." });
+        return ResponseFormatter.send(res, null, "User successfully updated.");
       }
 
-      return ErrorHandler.formatReposonse(res, new ValidationError("Failed to update user."));
+      return ErrorHandler.formatResponse(res, new ValidationError("Failed to update user."));
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
-        return ErrorHandler.formatReposonse(res, new DuplicateFieldError("CPF"));
+        return ErrorHandler.formatResponse(res, new DuplicateFieldError("CPF"));
       }
-      ErrorHandler.formatReposonse(res, error);
+      ErrorHandler.formatResponse(res, error);
     }
   }
 
@@ -87,12 +90,11 @@ class UserController {
       });
 
       if (deleted) {
-        return res.status(200).send({ message: "User successfully deleted." });
+        return ResponseFormatter.send(res, null, "User successfully deleted.");
       }
 
-      return ErrorHandler.formatReposonse(res, new NotFoundError("User not found."));
     } catch (error) {
-      ErrorHandler.formatReposonse(res, error);
+      ErrorHandler.formatResponse(res, error);
     }
   }
 
@@ -106,11 +108,11 @@ class UserController {
       });
 
       if (!user) {
-        return ErrorHandler.formatReposonse(res, new AuthenticationError("Invalid username or password."));
+        return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid username or password."));
       }
 
       if (!user.get("password")) {
-        return ErrorHandler.formatReposonse(res, new AuthenticationError("Password not found for the user."));
+        return ErrorHandler.formatResponse(res, new AuthenticationError("Password not found for the user."));
       }
 
       const isPasswordValid = bcrypt.compareSync(
@@ -119,7 +121,7 @@ class UserController {
       );
 
       if (!isPasswordValid) {
-        return ErrorHandler.formatReposonse(res, new AuthenticationError("Invalid username or password."));
+        return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid username or password."));
       }
 
       const token = jwt.sign(
@@ -128,9 +130,9 @@ class UserController {
         { expiresIn: "1h" },
       );
 
-      return res.status(200).json({ token });
+      return ResponseFormatter.send(res, { token }, "Login successful.");
     } catch (error) {
-      ErrorHandler.formatReposonse(res, error);
+      ErrorHandler.formatResponse(res, error);
     }
   }
 }
