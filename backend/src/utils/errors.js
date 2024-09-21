@@ -3,7 +3,6 @@ class ErrorHandler {
     const statusCode = err.statusCode || 500;
     const status = err.status || "error";
 
-    console.error(`Error: ${err.message}, Status: ${statusCode}`);
     return res.status(statusCode).json({
       status,
       message: err.message || "An unknown error occurred",

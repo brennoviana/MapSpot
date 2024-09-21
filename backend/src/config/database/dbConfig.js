@@ -1,7 +1,6 @@
 import { Sequelize } from "sequelize";
 import { config } from "../env/envConfig.js";
 
-console.log(config)
 export const sequelize = new Sequelize(
   config.postgresDatabase,
   config.postgresUsername,
@@ -22,7 +21,6 @@ export const connectToPostgres = async () => {
     await sequelize.sync();
     retryCount = 0;
   } catch (error) {
-    console.log("Error connecting to Postgres:", error);
     retryCount++;
     if (retryCount < maxRetries) {
       setTimeout(connectToPostgres, 5000);
