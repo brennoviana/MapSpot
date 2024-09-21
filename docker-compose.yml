@@ -14,16 +14,24 @@ services:
   #   environment:
   #     - EXPO_DEVTOOLS_LISTEN_PORT=19002
 
-  # express:
-  #   build:
-  #     context: .
-  #     dockerfile: backend/Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - app-network
-  #   depends_on:
-  #     - postgres
+  express:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    networks:
+      - app-network
+    depends_on:
+      - postgres
 
   postgres:
     image: postgres:15
