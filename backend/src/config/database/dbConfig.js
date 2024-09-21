@@ -20,7 +20,9 @@ export const connectToPostgres = async () => {
     await sequelize.authenticate();
     await sequelize.sync();
     retryCount = 0;
+    console.log("Connection with Postgres has been established successfully.");
   } catch (error) {
+    console.log("Unable to connect to Postgres:", error);
     retryCount++;
     if (retryCount < maxRetries) {
       setTimeout(connectToPostgres, 5000);

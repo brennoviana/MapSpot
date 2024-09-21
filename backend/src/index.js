@@ -7,7 +7,9 @@ const PORT = config.portApi;
 const startServer = async () => {
   await connectToPostgres();
 
-  app.listen(PORT, () => {});
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 };
 
 startServer();
