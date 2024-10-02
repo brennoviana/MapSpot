@@ -3,6 +3,8 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'reac
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import axios from 'axios';
+
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
@@ -23,19 +25,14 @@ const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
 
-  const handleRegister = () => {
-    console.log({
-      name,
-      cpf,
-      address,
-      number,
-      city,
-      state,
-      zipCode,
-      username,
-      password,
+  const handleRegister = async() => {
+    const response = await axios.post('http://172.27.17.38:3000/api/v1/users', {
+     email,
+     cpf,
+     zipCode,
+     username,
+    password,
     });
-    // Navegar para a próxima tela após o registro
   };
 
   const handleLogin = () => {

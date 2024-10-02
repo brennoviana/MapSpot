@@ -2,11 +2,11 @@ FROM node:20.16.0
 
 WORKDIR /usr/src/app
 
-COPY ./backend/package*.json ./
+COPY ./backend/services/auth/package*.json ./
 
 RUN npm install
 
-COPY ./backend ./
+COPY ./backend/services/auth ./
 
 EXPOSE 3000
 

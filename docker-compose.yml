@@ -17,7 +17,7 @@ services:
   express:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: backend/services/auth/Dockerfile
     ports:
       - "3000:3000"
     environment:
