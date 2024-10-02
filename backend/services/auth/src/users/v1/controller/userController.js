@@ -100,15 +100,15 @@ class UserController {
 
   async loginUser(req, res) {
     try {
-      const { username, password } = req.body;
+      const { email, password } = req.body;
 
       const user = await User.findOne({
-        where: { username },
-        attributes: ["id", "username", "password"],
+        where: { email },
+        attributes: ["id", "email", "password"],
       });
 
       if (!user) {
-        return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid username or password."));
+        return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid email or password."));
       }
 
       if (!user.get("password")) {
@@ -121,11 +121,11 @@ class UserController {
       );
 
       if (!isPasswordValid) {
-        return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid username or password."));
+        return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid email or password."));
       }
 
       const token = jwt.sign(
-        { id: user.get("id"), username: user.get("username") },
+        { id: user.get("id"), username: user.get("email") },
         config.jwtSecret,
         { expiresIn: "1h" },
       );

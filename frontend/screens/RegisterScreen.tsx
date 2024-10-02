@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import axios from 'axios';
-
+import axios, { AxiosError } from 'axios';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
@@ -16,24 +15,56 @@ const RegisterScreen: React.FC = () => {
   const [password, setPassword] = useState<string>('');
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
+  const handleRegister = async () => {
+    try {
+      const response = await axios.post('http://172.20.10.2:3000/api/v1/users', {
+        email,
+        cpf,
+        zipCode,
+        username,
+        password,
+      });
 
-  const handleRegister = async() => {
-    const response = await axios.post('http://localhost:3000/api/v1/users', {
-     email,
-     cpf,
-     zipCode,
-     username,
-    password,
-    });
-    navigation.navigate('home');
+      Alert.alert(
+        'Cadastro efetuado com sucesso',
+        '',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('login'),
+          },
+        ],
+        { cancelable: false }
+      );
+
+      navigation.navigate('login');
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        if (axiosError.response) {
+          Alert.alert('Erro', axiosError.response.data.message || 'Erro no servidor');
+          return;
+        } else if (axiosError.request) {
+          Alert.alert('Sem resposta do servidor');      
+          return;
+        } else {
+          Alert.alert('Erro ao configurar a requisição');
+          return;
+        }
+      } else {
+        Alert.alert('Erro desconhecido');
+        return;
+      }
+    }
   };
+
   const handleLogin = () => {
     navigation.navigate('login');
   };
 
   return (
     <View style={styles.container}>
-      <Image 
+      <Image
         source={require('../assets/images/MAPSPOT.png')}
         style={styles.logo}
       />
@@ -41,20 +72,23 @@ const RegisterScreen: React.FC = () => {
 
       <TextInput
         style={styles.input}
+        placeholderTextColor="#000000"
         placeholder="E-Mail"
         value={email}
         onChangeText={setEmail}
       />
 
       <TextInput
+        placeholderTextColor="#000000"
         style={styles.input}
         placeholder="Nome de usuário"
         value={username}
         onChangeText={setUsername}
       />
 
-       <TextInput
+      <TextInput
         style={styles.input}
+        placeholderTextColor="#000000"
         placeholder="Senha"
         value={password}
         onChangeText={setPassword}
@@ -63,6 +97,7 @@ const RegisterScreen: React.FC = () => {
 
       <TextInput
         value={cpf}
+        placeholderTextColor="#000000"
         style={styles.input}
         onChangeText={(text) => setCpf(text)}
         keyboardType="numeric"
@@ -70,12 +105,12 @@ const RegisterScreen: React.FC = () => {
       />
 
       <TextInput
+        placeholderTextColor="#000000"
         style={styles.input}
         placeholder="CEP"
         value={zipCode}
         onChangeText={setZipCode}
       />
-
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Cadastrar</Text>
@@ -114,8 +149,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingLeft: 10,
     borderRadius: 25,
-    backgroundColor: '#fff',
-    color: '#000',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.25,
@@ -139,6 +172,11 @@ const styles = StyleSheet.create({
   loginText: {
     color: '#3B82F6',
     marginTop: 20,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 
