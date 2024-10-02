@@ -25,6 +25,7 @@ const RegisterScreen: React.FC = () => {
      username,
     password,
     });
+    navigation.navigate('home');
   };
   const handleLogin = () => {
     navigation.navigate('login');

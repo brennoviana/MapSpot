@@ -23,6 +23,8 @@ const LoginScreen: React.FC = () => {
   const handleLogin = () => {
     console.log('Email:', email);
     console.log('Password:', password);
+
+    navigation.navigate('home');
   };
 
   const handleRegister = () => {
