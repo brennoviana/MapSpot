@@ -8,17 +8,9 @@ import axios from 'axios';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
-const formatCPF = (text: string) => {
-    return text.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g, '$1.$2.$3-$4');
-  };
-
 const RegisterScreen: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [cpf, setCpf] = useState<string>('');
-  const [address, setAddress] = useState<string>('');
-  const [number, setNumber] = useState<string>('');
-  const [city, setCity] = useState<string>('');
-  const [state, setState] = useState<string>('');
   const [zipCode, setZipCode] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -26,7 +18,7 @@ const RegisterScreen: React.FC = () => {
 
 
   const handleRegister = async() => {
-    const response = await axios.post('http://172.27.17.38:3000/api/v1/users', {
+    const response = await axios.post('http://localhost:3000/api/v1/users', {
      email,
      cpf,
      zipCode,
@@ -34,7 +26,6 @@ const RegisterScreen: React.FC = () => {
     password,
     });
   };
-
   const handleLogin = () => {
     navigation.navigate('login');
   };
@@ -72,7 +63,7 @@ const RegisterScreen: React.FC = () => {
       <TextInput
         value={cpf}
         style={styles.input}
-        onChangeText={(text) => setCpf(formatCPF(text))}
+        onChangeText={(text) => setCpf(text)}
         keyboardType="numeric"
         placeholder="CPF"
       />

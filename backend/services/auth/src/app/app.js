@@ -7,11 +7,7 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors({
-    origin: 'http://localhost:19000', // URL do seu frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-    credentials: true // Se você estiver usando cookies de autenticação
-}));
+app.use(cors());
 
 app.use("/api/v1/users", userRoutes);
 

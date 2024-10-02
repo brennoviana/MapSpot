@@ -18,7 +18,7 @@ const maxRetries = 3;
 export const connectToPostgres = async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync();
+    await sequelize.sync({ force: true });
     retryCount = 0;
     console.log("Connection with Postgres has been established successfully.");
   } catch (error) {
