@@ -1,18 +1,18 @@
 services:
-  expo:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: expo-app
-    ports:
-      - '19000:19000'
-      - '19001:19001'
-      - '19002:19002'
-    volumes:
-      - ./frontend:/app
-    command: npx expo start
-    environment:
-      - EXPO_DEVTOOLS_LISTEN_PORT=19002
+  # expo:
+    # build:
+    #   context: .
+    #   dockerfile: frontend/Dockerfile
+    # container_name: expo-app
+    # ports:
+    #   - '19000:19000'
+    #   - '19001:19001'
+    #   - '19002:19002'
+    # volumes:
+    #   - ./frontend:/app
+    # command: npm run start
+    # environment:
+    #   - EXPO_DEVTOOLS_LISTEN_PORT=19002
 
   express:
     build:
