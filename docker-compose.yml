@@ -1,0 +1,55 @@
+services:
+  # expo:
+    # build:
+    #   context: .
+    #   dockerfile: frontend/Dockerfile
+    # container_name: expo-app
+    # ports:
+    #   - '19000:19000'
+    #   - '19001:19001'
+    #   - '19002:19002'
+    # volumes:
+    #   - ./frontend:/app
+    # command: npm run start
+    # environment:
+    #   - EXPO_DEVTOOLS_LISTEN_PORT=19002
+
+  express:
+    build:
+      context: .
+      dockerfile: backend/services/auth/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=${PORT}
+      - JWT_SECRET=${JWT_SECRET}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_HOST_DB=${POSTGRES_HOST_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
