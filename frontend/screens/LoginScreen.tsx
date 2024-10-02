@@ -19,14 +19,11 @@ type RootStackParamList = {
   home: undefined;
 };
 
-// Tipagem da propriedade de navegação para a tela de login
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'login'>;
 
-// Interface para os dados retornados pelo servidor após o login
 interface LoginResponse {
   token?: string;
   message?: string;
-  // Adicione outras propriedades se o seu backend retornar mais dados
 }
 
 const LoginScreen: React.FC = () => {
@@ -35,7 +32,6 @@ const LoginScreen: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
-  // Função para validar o formato do email
   const isValidEmail = (email: string): boolean => {
     const regex = /\S+@\S+\.\S+/;
     return regex.test(email);

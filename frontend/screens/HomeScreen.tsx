@@ -58,13 +58,13 @@ const MainTabNavigator = () => {
         },
         tabBarActiveTintColor: '#07284B',
         tabBarInactiveTintColor: 'gray',
-        tabBarShowLabel: false, // Esconde os nomes das tabs
+        tabBarShowLabel: false,
       })}
     >
-      <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }}/>
+      <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 };
