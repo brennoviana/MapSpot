@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
   login: undefined;
@@ -22,6 +23,10 @@ type RootStackParamList = {
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'login'>;
 
 interface LoginResponse {
+  data: {
+    id: number;
+    token: string;
+  };
   token?: string;
   message?: string;
 }
@@ -51,7 +56,7 @@ const LoginScreen: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://172.20.10.2:3000/api/v1/users/login', {
+      const response = await fetch('http://localhost:3000/api/v1/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,15 +64,17 @@ const LoginScreen: React.FC = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data: LoginResponse = await response.json();
+      const responseJson: LoginResponse = await response.json();
 
       if (response.ok) {
-        console.log('Login bem-sucedido:', data);
+        console.log('Login bem-sucedido:', responseJson);
+        await AsyncStorage.setItem('userId', String(responseJson.data.id));
+        await AsyncStorage.setItem('userToken', responseJson.data.token);
 
         navigation.navigate('home');
       } else {
-        console.log('Falha no login:', data);
-        Alert.alert('Falha no login', data.message || 'Ocorreu um erro durante o login.');
+        console.log('Falha no login:', responseJson);
+        Alert.alert('Falha no login', responseJson.message || 'Ocorreu um erro durante o login.');
       }
     } catch (error) {
       console.error('Erro durante o login:', error);
