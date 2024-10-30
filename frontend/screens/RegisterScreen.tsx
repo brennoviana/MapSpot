@@ -17,7 +17,7 @@ const RegisterScreen: React.FC = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/users', {
+      const response = await axios.post('http://172.27.17.38:3000/api/v1/users', {
         email,
         cpf,
         zipCode,
