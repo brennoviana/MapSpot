@@ -130,7 +130,7 @@ class UserController {
         { expiresIn: "1h" },
       );
 
-      return ResponseFormatter.send(res, { token }, "Login successful.");
+      return ResponseFormatter.send(res, {id: user.get("id"), token }, "Login successful.");
     } catch (error) {
       ErrorHandler.formatResponse(res, error);
     }
