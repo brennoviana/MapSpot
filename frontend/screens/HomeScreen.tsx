@@ -2,15 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import axios, { AxiosError } from 'axios';
-import { NavigationContainer } from '@react-navigation/native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-
+import { API_URL } from '@env';
 
 const Tab = createBottomTabNavigator();
 
@@ -41,10 +36,6 @@ const SettingsScreen = () => {
       aspect: [1, 1],
       quality: 1,
     });
-
-   // if (!result.canceled) {
-    //  setProfileImage(result.assets[0].uri);
-    //}
   };
 
   const handleSaveChanges = () => {
@@ -64,7 +55,7 @@ const SettingsScreen = () => {
           text: 'Excluir',
           onPress: async () => {
             try {
-              const response = await axios.delete(`http://172.27.17.38:3000/api/v1/users/${AsyncStorage.getItem('userId')}`, {
+              const response = await axios.delete(`${API_URL}/api/v1/users/${AsyncStorage.getItem('userId')}`, {
                 headers: {
                   'token': `Bearer ${AsyncStorage.getItem('userToken')}`,
                   'Content-Type': 'application/json',
