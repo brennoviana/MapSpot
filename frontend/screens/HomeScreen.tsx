@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as ImagePicker from 'expo-image-picker';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { config } from '../config'
 
 const Tab = createBottomTabNavigator();
 
@@ -54,7 +55,7 @@ const SettingsScreen = () => {
           text: 'Excluir',
           onPress: async () => {
             try {
-              const response = await axios.delete(`http://172.27.17.38:3000/api/v1/users/${AsyncStorage.getItem('userId')}`, {
+              const response = await axios.delete(`${config.API_URL}/api/v1/users/${AsyncStorage.getItem('userId')}`, {
                 headers: {
                   'token': `Bearer ${AsyncStorage.getItem('userToken')}`,
                   'Content-Type': 'application/json',

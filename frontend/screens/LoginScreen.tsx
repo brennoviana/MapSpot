@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { config } from '../config'
 type RootStackParamList = {
   login: undefined;
   register: undefined;
@@ -56,7 +56,7 @@ const LoginScreen: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://172.27.17.38:3000/api/v1/users/login', {
+      const response = await fetch(`${config.API_URL}/api/v1/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
+import { config } from '../config'
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
@@ -17,7 +18,7 @@ const RegisterScreen: React.FC = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://172.27.17.38:3000/api/v1/users', {
+      const response = await axios.post(`${config.API_URL}/api/v1/users`, {
         email,
         cpf,
         zipCode,
