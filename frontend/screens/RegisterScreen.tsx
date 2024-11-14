@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
-import { config } from '../config'
+import { config } from '../config/env'
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
