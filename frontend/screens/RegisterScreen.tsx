@@ -4,7 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
-import { config } from '../config/env'
+import * as ImagePicker from 'expo-image-picker';
+import { config } from '../config/env';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
@@ -14,110 +15,123 @@ const RegisterScreen: React.FC = () => {
   const [zipCode, setZipCode] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [imageUri, setImageUri] = useState<string | null>(null); // State to store image URI
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+
+  const handleImageSelect = async () => {
+    // Request permission to access media library
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert("Permissão necessária", "É necessário permitir o acesso à galeria para selecionar uma imagem.");
+      return;
+    }
+
+    // Open the image library
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',  // Usando 'images' em letras minúsculas
+      allowsEditing: true,
+      quality: 1,
+    });
+    
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post(`${config.API_URL}/api/v1/users`, {
-        email,
-        cpf,
-        zipCode,
-        username,
-        password,
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('cpf', cpf);
+      formData.append('zipCode', zipCode);
+      formData.append('username', username);
+      formData.append('password', password);
+
+      if (imageUri) {
+        formData.append('profileImage', {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        } as any);        
+      }
+
+      const response = await axios.post(`${config.API_URL}/api/v1/users`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      Alert.alert(
-        'Cadastro efetuado com sucesso',
-        '',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('login'),
-          },
-        ],
-        { cancelable: false }
-      );
-
-      navigation.navigate('login');
+      Alert.alert('Cadastro efetuado com sucesso', '', [
+        { text: 'OK', onPress: () => navigation.navigate('login') },
+      ]);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<{ message?: string }>;
         if (axiosError.response) {
           Alert.alert('Erro', axiosError.response.data.message || 'Erro no servidor');
-          return;
         } else if (axiosError.request) {
-          Alert.alert('Sem resposta do servidor');      
-          return;
+          Alert.alert('Sem resposta do servidor');
         } else {
           Alert.alert('Erro ao configurar a requisição');
-          return;
         }
       } else {
         Alert.alert('Erro desconhecido');
-        return;
       }
     }
   };
 
-  const handleLogin = () => {
-    navigation.navigate('login');
-  };
-
   return (
     <View style={styles.container}>
-      <Image
-        source={require('../assets/images/MAPSPOT.png')}
-        style={styles.logo}
-      />
+      <TouchableOpacity onPress={handleImageSelect} style={styles.imageContainer}>
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Text>Selecionar Imagem</Text>
+          </View>
+        )}
+      </TouchableOpacity>
       <Text style={styles.welcomeText}>Crie sua conta!</Text>
 
       <TextInput
         style={styles.input}
-        placeholderTextColor="#000000"
         placeholder="E-Mail"
+        placeholderTextColor="#000000"
         value={email}
         onChangeText={setEmail}
       />
-
       <TextInput
+        placeholder="Nome de usuário"
         placeholderTextColor="#000000"
         style={styles.input}
-        placeholder="Nome de usuário"
         value={username}
         onChangeText={setUsername}
       />
-
       <TextInput
         style={styles.input}
-        placeholderTextColor="#000000"
         placeholder="Senha"
+        placeholderTextColor="#000000"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-
       <TextInput
         value={cpf}
+        placeholder="CPF"
         placeholderTextColor="#000000"
         style={styles.input}
         onChangeText={(text) => setCpf(text)}
         keyboardType="numeric"
-        placeholder="CPF"
       />
-
       <TextInput
+        placeholder="CEP"
         placeholderTextColor="#000000"
         style={styles.input}
-        placeholder="CEP"
         value={zipCode}
         onChangeText={setZipCode}
       />
-
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={handleLogin}>
+      <TouchableOpacity onPress={() => navigation.navigate('login')}>
         <Text style={styles.loginText}>Já tem conta? Voltar ao login</Text>
       </TouchableOpacity>
     </View>
@@ -132,10 +146,22 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-  logo: {
-    width: 200,
-    height: 150,
+  imageContainer: {
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  imagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   welcomeText: {
     fontSize: 24,
@@ -150,11 +176,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingLeft: 10,
     borderRadius: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
   },
   button: {
     backgroundColor: '#07284B',
@@ -164,7 +185,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 25,
     marginTop: 42,
-    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',
@@ -173,11 +193,6 @@ const styles = StyleSheet.create({
   loginText: {
     color: '#3B82F6',
     marginTop: 20,
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
   },
 });
 
