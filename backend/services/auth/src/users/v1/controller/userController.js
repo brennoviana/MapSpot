@@ -47,8 +47,8 @@ class UserController {
   async createUser(req, res) {
     try {
       const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-      const profileImagePath = req.file ? req.file.path : null;
-  
+      const profileImagePath = req.file ? req.file.filename : null;
+
       const newUser = await User.create({
         ...req.body,
         password: hashedPassword,
