@@ -55,9 +55,9 @@ const SettingsScreen = () => {
           text: 'Excluir',
           onPress: async () => {
             try {
-              const response = await axios.delete(`${config.API_URL}/api/v1/users/${AsyncStorage.getItem('userId')}`, {
+              const response = await axios.delete(`${config.API_URL}/api/v1/users/${await AsyncStorage.getItem('userId')}`, {
                 headers: {
-                  'token': `Bearer ${AsyncStorage.getItem('userToken')}`,
+                  'authorization': `Bearer ${await AsyncStorage.getItem('userToken')}`,
                   'Content-Type': 'application/json',
                 },
               });

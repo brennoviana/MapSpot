@@ -67,7 +67,6 @@ const LoginScreen: React.FC = () => {
       const responseJson: LoginResponse = await response.json();
 
       if (response.ok) {
-        console.log('Login bem-sucedido:', responseJson);
         await AsyncStorage.setItem('userId', String(responseJson.data.id));
         await AsyncStorage.setItem('userToken', responseJson.data.token);
 
