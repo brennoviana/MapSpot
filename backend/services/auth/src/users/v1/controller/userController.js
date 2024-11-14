@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { UniqueConstraintError } from "sequelize";
 import jwt from "jsonwebtoken";
+import fs from 'fs';
 
 import { config } from "../../../config/env/envConfig.js";
 import { User } from "../model/userModel.js";
@@ -46,16 +47,25 @@ class UserController {
   async createUser(req, res) {
     try {
       const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-
+      const profileImagePath = req.file ? req.file.path : null;
+  
       const newUser = await User.create({
         ...req.body,
         password: hashedPassword,
+        profileImage: profileImagePath,
       });
-
+  
       const userWithoutPassword = { ...newUser.get(), password: undefined };
 
       return ResponseFormatter.send(res, userWithoutPassword, "User created successfully.", 201);
     } catch (error) {
+      
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (unlinkError) => {
+          if (unlinkError) console.error("Error at deleting file:", unlinkError);
+        });
+      }
+
       if (error instanceof UniqueConstraintError) {
         const duplicateField = error.errors[0].path;
         return ErrorHandler.formatResponse(res, new DuplicateFieldError(duplicateField));

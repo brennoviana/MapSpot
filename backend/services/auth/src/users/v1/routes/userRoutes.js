@@ -5,6 +5,7 @@ import { validateRequestSchema } from "../../../generic-middlewares/validateRequ
 import { authenticateJWT } from "../../../generic-middlewares/authenticateJWT.js";
 import { validateUserExists } from "../middlewares/validateUserExists.js";
 import { userUpdateSchema } from "../schema/userUpdateSchema.js";
+import { upload } from "../middlewares/multerConfig.js";
 
 const userRoutes = Router();
 
@@ -19,6 +20,7 @@ userRoutes.get(
 
 userRoutes.post(
   "/",
+  upload.single("profileImage"),
   validateRequestSchema(userCreateSchema),
   userController.createUser,
 );
