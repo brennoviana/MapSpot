@@ -26,6 +26,8 @@ interface LoginResponse {
   data: {
     id: number;
     token: string;
+    username: string;
+    profileImage: string;
   };
   token?: string;
   message?: string;
@@ -69,6 +71,8 @@ const LoginScreen: React.FC = () => {
       if (response.ok) {
         await AsyncStorage.setItem('userId', String(responseJson.data.id));
         await AsyncStorage.setItem('userToken', responseJson.data.token);
+        await AsyncStorage.setItem('profileImage', responseJson.data.profileImage ?? '');
+        await AsyncStorage.setItem('username', responseJson.data.username);
 
         navigation.navigate('home');
       } else {

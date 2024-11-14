@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -26,21 +26,56 @@ const MapScreen = () => {
 };
 
 const SettingsScreen = () => {
-  const [userName] = useState('Nome do Usuário');
-  const [profileImage, setProfileImage] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const storedUserName = await AsyncStorage.getItem('username');
+      setUserName(storedUserName ?? '');
+
+      const cachedProfileImagePath = await AsyncStorage.getItem('profileImage');
+      if (cachedProfileImagePath) {
+        const imageUrl = `${config.API_URL}/uploads/${cachedProfileImagePath}`;
+        setProfileImage(imageUrl);
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<any>;
+      Alert.alert('Erro ao carregar dados do usuário', axiosError.message);
+    }
+  };
 
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
+  
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setProfileImage(uri);
+      await AsyncStorage.setItem('profileImage', uri.split('/').pop() ?? '');
+    }
   };
 
-  const handleSaveChanges = () => {
-    Alert.alert('Mudanças salvas', 'Seu perfil foi atualizado!');
-  };
+  const handleSaveChanges = async () => {
+    try {
+      await AsyncStorage.setItem('username', userName);
+      Alert.alert('Mudanças salvas', 'Seu perfil foi atualizado!');
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('Erro ao salvar dados', error.message);
+      } else {
+        Alert.alert('Erro ao salvar dados', 'Ocorreu um erro desconhecido');
+      }
+    }
+  };  
 
   const handleDeleteAccount = async () => {
     Alert.alert(
@@ -55,9 +90,11 @@ const SettingsScreen = () => {
           text: 'Excluir',
           onPress: async () => {
             try {
-              const response = await axios.delete(`${config.API_URL}/api/v1/users/${await AsyncStorage.getItem('userId')}`, {
+              const userId = await AsyncStorage.getItem('userId');
+              const userToken = await AsyncStorage.getItem('userToken');
+              const response = await axios.delete(`${config.API_URL}/api/v1/users/${userId}`, {
                 headers: {
-                  'authorization': `Bearer ${await AsyncStorage.getItem('userToken')}`,
+                  'authorization': `Bearer ${userToken}`,
                   'Content-Type': 'application/json',
                 },
               });
@@ -86,6 +123,7 @@ const SettingsScreen = () => {
       <TextInput
         style={styles.input}
         value={userName}
+        onChangeText={setUserName}
         placeholder="Nome"
         placeholderTextColor="#aaa"
       />
@@ -112,8 +150,6 @@ const MainTabNavigator = () => {
             iconName = 'map-marker';
           } else if (route.name === 'Home') {
             iconName = 'map-o';
-          } else if (route.name === 'Search') {
-            iconName = 'search';
           } else if (route.name === 'Settings') {
             iconName = 'cog';
           }
@@ -124,7 +160,7 @@ const MainTabNavigator = () => {
         tabBarShowLabel: false,
       })}
     >
-      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }}/>
+      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
@@ -186,6 +222,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 });
-
 
 export default MainTabNavigator;

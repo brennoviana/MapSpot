@@ -15,20 +15,18 @@ const RegisterScreen: React.FC = () => {
   const [zipCode, setZipCode] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [imageUri, setImageUri] = useState<string | null>(null); // State to store image URI
+  const [imageUri, setImageUri] = useState<string | null>(null); 
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
   const handleImageSelect = async () => {
-    // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert("Permissão necessária", "É necessário permitir o acesso à galeria para selecionar uma imagem.");
       return;
     }
 
-    // Open the image library
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',  // Usando 'images' em letras minúsculas
+      mediaTypes: 'images',
       allowsEditing: true,
       quality: 1,
     });
