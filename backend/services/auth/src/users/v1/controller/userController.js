@@ -112,10 +112,7 @@ class UserController {
     try {
       const { email, password } = req.body;
 
-      const user = await User.findOne({
-        where: { email },
-        attributes: ["id", "email", "password"],
-      });
+      const user = await User.findOne({where: { email }});
 
       if (!user) {
         return ErrorHandler.formatResponse(res, new AuthenticationError("Invalid email or password."));
@@ -140,7 +137,18 @@ class UserController {
         { expiresIn: "1h" },
       );
 
-      return ResponseFormatter.send(res, {id: user.get("id"), token }, "Login successful.");
+      const userData = user.toJSON();
+      delete userData.password;
+
+      return ResponseFormatter.send(
+        res, 
+        { 
+          ...userData,
+          token 
+        }, 
+        "Login successful."
+
+      );    
     } catch (error) {
       ErrorHandler.formatResponse(res, error);
     }

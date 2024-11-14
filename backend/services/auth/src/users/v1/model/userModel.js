@@ -13,6 +13,7 @@ User.init(
     email: {
       type: DataTypes.STRING(100),
       allowNull: false,
+      unique: true,
     },
     cpf: {
       type: DataTypes.STRING(20),
