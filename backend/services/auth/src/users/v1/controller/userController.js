@@ -76,16 +76,40 @@ class UserController {
 
   async updateUser(req, res) {
     try {
-      const [updated] = await User.update(req.body, {
+      const profileImagePath = req.file ? req.file.filename : null;
+      
+      const user = await User.findByPk(req.params.id);
+      if (!user) {
+        return ErrorHandler.formatResponse(res, new ValidationError("User not found."));
+      }
+   
+      const updatedData = { ...req.body };
+      if (profileImagePath) {
+        updatedData.profileImage = profileImagePath;
+      }
+  
+      const [updated] = await User.update(updatedData, {
         where: { id: req.params.id },
       });
-
+  
       if (updated) {
+        if (profileImagePath && user.profileImage) {
+          fs.unlink(`path/to/uploads/${user.profileImage}`, (unlinkError) => {
+            if (unlinkError) console.error("Error deleting old profile image:", unlinkError);
+          });
+        }
+  
         return ResponseFormatter.send(res, null, "User successfully updated.");
       }
-
+  
       return ErrorHandler.formatResponse(res, new ValidationError("Failed to update user."));
     } catch (error) {
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (unlinkError) => {
+          if (unlinkError) console.error("Error at deleting file:", unlinkError);
+        });
+      }
+  
       if (error instanceof UniqueConstraintError) {
         return ErrorHandler.formatResponse(res, new DuplicateFieldError("CPF"));
       }

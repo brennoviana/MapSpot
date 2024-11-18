@@ -27,6 +27,7 @@ userRoutes.post(
 
 userRoutes.put(
   "/:id",
+  upload.single("profileImage"),
   authenticateJWT,
   validateUserExists,
   validateRequestSchema(userUpdateSchema),
