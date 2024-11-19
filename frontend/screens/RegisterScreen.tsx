@@ -169,7 +169,7 @@ const RegisterScreen: React.FC = () => {
         secureTextEntry={!showPassword} // Controla se a senha é visível ou não
       />
       <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.toggleButtonRight}>
-        <Text style={styles.toggleText}>{showPassword ? 'Ocultar' : 'Mostrar'}</Text>
+        <Text style={styles.toggleText}>{showPassword ? 'Ocultar senha' : 'Mostrar senha'}</Text>
       </TouchableOpacity>
 
       {/* Confirmar Senha */}
@@ -183,7 +183,7 @@ const RegisterScreen: React.FC = () => {
         secureTextEntry={!showConfirmPassword} // Controla se a confirmação da senha é visível ou não
       />
       <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.toggleButtonRight}>
-        <Text style={styles.toggleText}>{showConfirmPassword ? 'Ocultar' : 'Mostrar'}</Text>
+        <Text style={styles.toggleText}>{showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -241,10 +241,10 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    width: '100%',
+    width: '90%',
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
+    marginBottom: 40,
     paddingLeft: 10,
     borderRadius: 15,
   },
@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     alignSelf: 'flex-start',
+    marginLeft: 25,
   },
   toggleButtonRight: {
     alignSelf: 'flex-end',  
@@ -261,11 +262,14 @@ const styles = StyleSheet.create({
   toggleText: {
     color: '#3B82F6',
     fontSize: 14,
+    marginRight: 30,
+
+  
   },
   button: {
     backgroundColor: '#07284B',
     height: 64,
-    width: '100%',
+    width: '70%', 
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 25,
@@ -284,23 +288,19 @@ const styles = StyleSheet.create({
   logo: {
     width: 250,
     height: 200,
-    marginBottom: 30,
-    marginTop: 2,
+    marginBottom: 20,
+    marginTop: 0,
   },
 
   headerContainer: {
   width: '100%',
-  height: 300,
   backgroundColor: '#07284B',
   alignItems: 'center',
-  paddingVertical: 40,
-  borderBottomLeftRadius: 25,
-  borderBottomRightRadius: 25, 
+  paddingVertical: 25,
+  borderBottomLeftRadius: 30,
+  borderBottomRightRadius: 30, 
 },
 
-inputContainer: {
-  padding: 0,
-}
 
 
 });
