@@ -18,6 +18,14 @@ const RegisterScreen: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null); 
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
+  const formatCpf = (text: string) => {
+    const cleaned = text.replace(/\D/g, '').slice(0, 11); 
+    return cleaned
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); 
+  };
+
   const handleImageSelect = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -116,7 +124,7 @@ const RegisterScreen: React.FC = () => {
         placeholder="CPF"
         placeholderTextColor="#000000"
         style={styles.input}
-        onChangeText={(text) => setCpf(text)}
+        onChangeText={(text) => setCpf(formatCpf(text))}
         keyboardType="numeric"
       />
       <TextInput
