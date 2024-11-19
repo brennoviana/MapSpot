@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { config } from '../config/env';
+import { Ionicons } from '@expo/vector-icons'; // Importando o ícone da seta
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
@@ -15,7 +16,10 @@ const RegisterScreen: React.FC = () => {
   const [zipCode, setZipCode] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>(''); 
   const [imageUri, setImageUri] = useState<string | null>(null); 
+  const [showPassword, setShowPassword] = useState<boolean>(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false); 
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
   const formatCpf = (text: string) => {
@@ -24,6 +28,11 @@ const RegisterScreen: React.FC = () => {
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); 
+  };
+
+  const formatZipCode = (text: string) => {
+    const cleaned = text.replace(/\D/g, '').slice(0, 8);
+    return cleaned.replace(/(\d{5})(\d{1,3})/, '$1-$2');
   };
 
   const handleImageSelect = async () => {
@@ -44,7 +53,21 @@ const RegisterScreen: React.FC = () => {
     }
   };
 
+  const validatePassword = (): boolean => {
+    if (password.length < 8) {
+      Alert.alert("Erro", "A senha deve ter pelo menos 8 caracteres.");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Erro", "As senhas não correspondem.");
+      return false;
+    }
+    return true;
+  };
+
   const handleRegister = async () => {
+    if (!validatePassword()) return;
+
     try {
       const formData = new FormData();
       formData.append('email', email);
@@ -85,76 +108,127 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Botão de seta para voltar ao login */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('login')}>
+        <Ionicons name="arrow-back" size={35} color="#3B82F6" /> {/* seta  */}
+      </TouchableOpacity>
+ 
+      <Image source={require('../assets/images/MAPSPOT.png')} style={styles.logo} />
+      <Text style={styles.welcomeText}>Vamos criar a sua conta!</Text> 
+
       <TouchableOpacity onPress={handleImageSelect} style={styles.imageContainer}>
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.profileImage} />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text>Selecionar Imagem</Text>
+            <Text>Add Imagem</Text>
           </View>
         )}
       </TouchableOpacity>
-      <Text style={styles.welcomeText}>Crie sua conta!</Text>
 
+
+      {/* Nome */}
+      <Text style={styles.label}>Nome</Text>
       <TextInput
-        style={styles.input}
-        placeholder="E-Mail"
-        placeholderTextColor="#000000"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        placeholder="Nome de usuário"
-        placeholderTextColor="#000000"
+        placeholder="Insira o seu nome completo"
+        placeholderTextColor="#A6A6A6"
         style={styles.input}
         value={username}
         onChangeText={setUsername}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        placeholderTextColor="#000000"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+
+
+      {/* CPF */}
+      <Text style={styles.label}>CPF</Text>
       <TextInput
         value={cpf}
-        placeholder="CPF"
-        placeholderTextColor="#000000"
+        placeholder="Insira o seu CPF"
+        placeholderTextColor="#A6A6A6"
         style={styles.input}
         onChangeText={(text) => setCpf(formatCpf(text))}
         keyboardType="numeric"
       />
+
+      {/* E-Mail */}
+      <Text style={styles.label}>E-Mail</Text>
       <TextInput
-        placeholder="CEP"
-        placeholderTextColor="#000000"
+        style={styles.input}
+        placeholder="Insira o seu e-mail"
+        placeholderTextColor="#A6A6A6"
+        value={email}
+        onChangeText={setEmail}
+      />
+
+      {/* CEP */}
+      <Text style={styles.label}>CEP</Text>
+      <TextInput
+        placeholder="Insira o CEP da sua casa"
+        placeholderTextColor="#A6A6A6"
         style={styles.input}
         value={zipCode}
-        onChangeText={setZipCode}
+        onChangeText={(text) => setZipCode(formatZipCode(text))}
+        keyboardType="numeric"
       />
+
+      {/* Senha */}
+      <Text style={styles.label}>Senha</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="No mínimo 8 caracteres"
+        placeholderTextColor="#A6A6A6"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={!showPassword} // Controla se a senha é visível ou não
+      />
+      <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.toggleButtonRight}>
+        <Text style={styles.toggleText}>{showPassword ? 'Ocultar' : 'Mostrar'}</Text>
+      </TouchableOpacity>
+
+      {/* Confirmar Senha */}
+      <Text style={styles.label}>Confirmar Senha</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Confirme a sua Senha"
+        placeholderTextColor="#A6A6A6"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry={!showConfirmPassword} // Controla se a confirmação da senha é visível ou não
+      />
+      <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.toggleButtonRight}>
+        <Text style={styles.toggleText}>{showConfirmPassword ? 'Ocultar' : 'Mostrar'}</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('login')}>
         <Text style={styles.loginText}>Já tem conta? Voltar ao login</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
+
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
   },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    padding: 10,
+  },
   imageContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    marginTop: 40,
   },
   imagePlaceholder: {
     width: 100,
@@ -181,7 +255,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 15,
     paddingLeft: 10,
-    borderRadius: 25,
+    borderRadius: 15,
+  },
+  label: {
+    color: '#2F5F98',
+    fontSize: 16,
+    marginBottom: 5,
+    alignSelf: 'flex-start',
+  },
+  toggleButtonRight: {
+    alignSelf: 'flex-end',  
+    marginBottom: 10,       
+  },
+  toggleText: {
+    color: '#3B82F6',
+    fontSize: 14,
   },
   button: {
     backgroundColor: '#07284B',
@@ -190,15 +278,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 25,
-    marginTop: 42,
+    marginTop: 102,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 18,
   },
   loginText: {
     color: '#3B82F6',
     marginTop: 20,
+  },
+  logo: {
+    width: 250,
+    height: 200,
+    marginBottom: 30,
+    marginTop: 52,
   },
 });
 

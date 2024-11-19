@@ -102,13 +102,13 @@ const LoginScreen: React.FC = () => {
       <TextInput
         style={styles.input}
         placeholder="Insira seu email"
-        placeholderTextColor="#000000"
+        placeholderTextColor="#A6A6A6"
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
-        placeholderTextColor="#000000"
+        placeholderTextColor="#A6A6A6"
         placeholder="Insira sua senha"
         value={password}
         onChangeText={setPassword}
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 15,
     paddingLeft: 10,
-    borderRadius: 25,
+    borderRadius: 15,
     backgroundColor: '#fff',
     color: '#000',
     shadowColor: '#000',
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 19,
   },
   forgotPassword: {
     color: '#3B82F6',
