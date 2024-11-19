@@ -6,14 +6,13 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { config } from '../config/env';
-import { Ionicons } from '@expo/vector-icons'; // Importando o ícone da seta
+import { Ionicons } from '@expo/vector-icons'; 
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'register'>;
 
 const RegisterScreen: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [cpf, setCpf] = useState<string>('');
-  const [zipCode, setZipCode] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>(''); 
@@ -28,11 +27,6 @@ const RegisterScreen: React.FC = () => {
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); 
-  };
-
-  const formatZipCode = (text: string) => {
-    const cleaned = text.replace(/\D/g, '').slice(0, 8);
-    return cleaned.replace(/(\d{5})(\d{1,3})/, '$1-$2');
   };
 
   const handleImageSelect = async () => {
@@ -72,7 +66,6 @@ const RegisterScreen: React.FC = () => {
       const formData = new FormData();
       formData.append('email', email);
       formData.append('cpf', cpf);
-      formData.append('zipCode', zipCode);
       formData.append('username', username);
       formData.append('password', password);
 
@@ -109,13 +102,17 @@ const RegisterScreen: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Botão de seta para voltar ao login */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('login')}>
-        <Ionicons name="arrow-back" size={35} color="#3B82F6" /> {/* seta  */}
-      </TouchableOpacity>
- 
-      <Image source={require('../assets/images/MAPSPOT.png')} style={styles.logo} />
-      <Text style={styles.welcomeText}>Vamos criar a sua conta!</Text> 
+  {/* Botão de seta para voltar ao login */}
+  <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('login')}>
+    <Ionicons name="arrow-back" size={35} color="#fff" />
+  </TouchableOpacity>
+
+  {/* Contêiner azul arredondado */}
+  <View style={styles.headerContainer}>
+    <Image source={require('../assets/images/MAPSPOT.png')} style={styles.logo} />
+  </View>
+
+  <Text style={styles.welcomeText}>Faça o seu cadastro</Text>
 
       <TouchableOpacity onPress={handleImageSelect} style={styles.imageContainer}>
         {imageUri ? (
@@ -127,7 +124,7 @@ const RegisterScreen: React.FC = () => {
         )}
       </TouchableOpacity>
 
-
+  
       {/* Nome */}
       <Text style={styles.label}>Nome</Text>
       <TextInput
@@ -160,16 +157,6 @@ const RegisterScreen: React.FC = () => {
         onChangeText={setEmail}
       />
 
-      {/* CEP */}
-      <Text style={styles.label}>CEP</Text>
-      <TextInput
-        placeholder="Insira o CEP da sua casa"
-        placeholderTextColor="#A6A6A6"
-        style={styles.input}
-        value={zipCode}
-        onChangeText={(text) => setZipCode(formatZipCode(text))}
-        keyboardType="numeric"
-      />
 
       {/* Senha */}
       <Text style={styles.label}>Senha</Text>
@@ -216,14 +203,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 0,
     backgroundColor: '#fff',
   },
   backButton: {
     position: 'absolute',
-    top: 40,
+    top: 100,
     left: 20,
     padding: 10,
+    zIndex: 10, 
+
   },
   imageContainer: {
     alignItems: 'center',
@@ -246,7 +235,9 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 40,
+    marginTop: 20,
+    color: '#2F5F98',
   },
   input: {
     height: 50,
@@ -288,13 +279,30 @@ const styles = StyleSheet.create({
   loginText: {
     color: '#3B82F6',
     marginTop: 20,
+    marginBottom: 40,
   },
   logo: {
     width: 250,
     height: 200,
     marginBottom: 30,
-    marginTop: 52,
+    marginTop: 2,
   },
+
+  headerContainer: {
+  width: '100%',
+  height: 300,
+  backgroundColor: '#07284B',
+  alignItems: 'center',
+  paddingVertical: 40,
+  borderBottomLeftRadius: 25,
+  borderBottomRightRadius: 25, 
+},
+
+inputContainer: {
+  padding: 0,
+}
+
+
 });
 
 export default RegisterScreen;
