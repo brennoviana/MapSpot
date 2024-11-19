@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert, ScrollView, Modal, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -19,7 +19,10 @@ const RegisterScreen: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null); 
   const [showPassword, setShowPassword] = useState<boolean>(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false); 
+  const [modalVisible, setModalVisible] = useState<boolean>(false); // Estado para controlar a visibilidade do modal
+  const [isTermsAccepted, setIsTermsAccepted] = useState<boolean>(false); // Novo estado para controlar a caixa de seleção
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+
 
   const formatCpf = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 11); 
@@ -100,19 +103,27 @@ const RegisterScreen: React.FC = () => {
     }
   };
 
+  const openModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-  {/* Botão de seta para voltar ao login */}
-  <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('login')}>
-    <Ionicons name="arrow-back" size={35} color="#fff" />
-  </TouchableOpacity>
+      {/* Botão de seta para voltar ao login */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('login')}>
+        <Ionicons name="arrow-back" size={35} color="#fff" />
+      </TouchableOpacity>
 
-  {/* Contêiner azul arredondado */}
-  <View style={styles.headerContainer}>
-    <Image source={require('../assets/images/MAPSPOT.png')} style={styles.logo} />
-  </View>
+      {/* Contêiner azul arredondado */}
+      <View style={styles.headerContainer}>
+        <Image source={require('../assets/images/MAPSPOT.png')} style={styles.logo} />
+      </View>
 
-  <Text style={styles.welcomeText}>Faça o seu cadastro</Text>
+      <Text style={styles.welcomeText}>Faça o seu cadastro</Text>
 
       <TouchableOpacity onPress={handleImageSelect} style={styles.imageContainer}>
         {imageUri ? (
@@ -124,7 +135,6 @@ const RegisterScreen: React.FC = () => {
         )}
       </TouchableOpacity>
 
-  
       {/* Nome */}
       <Text style={styles.label}>Nome</Text>
       <TextInput
@@ -134,7 +144,6 @@ const RegisterScreen: React.FC = () => {
         value={username}
         onChangeText={setUsername}
       />
-
 
       {/* CPF */}
       <Text style={styles.label}>CPF</Text>
@@ -156,7 +165,6 @@ const RegisterScreen: React.FC = () => {
         value={email}
         onChangeText={setEmail}
       />
-
 
       {/* Senha */}
       <Text style={styles.label}>Senha</Text>
@@ -186,17 +194,70 @@ const RegisterScreen: React.FC = () => {
         <Text style={styles.toggleText}>{showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}</Text>
       </TouchableOpacity>
 
+      {/* Aceitar essas permissões */}
+      <View style={styles.termsContainer}>
+        <TouchableOpacity
+          style={styles.termsCheckboxContainer}
+          onPress={() => setIsTermsAccepted(!isTermsAccepted)}
+        >
+          <Text style={styles.termsCheckbox}>{isTermsAccepted ? '✓' : '⬜'}</Text>
+        </TouchableOpacity>
+        <Text style={styles.termsTextButton}>
+          Aceitar essas permissões significa que você permite que este aplicativo use seus dados conforme especificado em Termo de Consentimento localizado abaixo:
+        </Text>
+      </View>
+
+      {/* Termo de Consentimento */}
+      <TouchableOpacity onPress={openModal} style={styles.termsButton}>
+        <Text style={styles.termsText}>Leia o Termo de Consentimento aqui</Text>
+      </TouchableOpacity>
+
+      {/* Botão de Cadastrar */}
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={() => navigation.navigate('login')}>
         <Text style={styles.loginText}>Já tem conta? Voltar ao login</Text>
       </TouchableOpacity>
+
+      {/* Modal para exibir o termo completo */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeModal}>
+        <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <ScrollView style={styles.modalTextContainer}>
+                <Text style={styles.modalText}>
+                                    {/* O conteúdo completo do termo de consentimento aqui */}
+                                    Termo de Consentimento para Tratamento e Armazenamento de Dados Pessoais
+                  {'\n\n'}
+                  Ao realizar o cadastro no MapSpot, você concorda com a coleta, tratamento e armazenamento de seus dados pessoais, conforme descrito abaixo, de acordo com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/18 - LGPD):
+                  {'\n\n'}
+                  1. Os dados fornecidos por você, como nome, e-mail, CPF, endereço e demais informações relevantes para o cadastro, serão coletados e tratados exclusivamente para fins de criação de conta, fornecimento de serviços, personalização da experiência do usuário e comunicação relacionada à sua utilização do MapSpot.
+                  {'\n\n'}
+                  2. Os dados pessoais serão armazenados de forma segura em nossos servidores, com acesso restrito e adotando medidas adequadas para garantir a sua proteção contra acessos não autorizados, vazamentos ou quaisquer outros incidentes de segurança.
+                  {'\n\n'}
+                  3. Você tem o direito de acessar, corrigir, atualizar, ou excluir seus dados pessoais a qualquer momento. Caso deseje exercer qualquer um desses direitos ou tenha dúvidas sobre o tratamento de seus dados, entre em contato conosco através do e-mail: mapspot.marica.suporte@gmail.com.
+                  {'\n\n'}
+                  4. Ao prosseguir com o cadastro, você declara estar ciente e de acordo com os termos deste consentimento, autorizando o tratamento dos seus dados pessoais conforme descrito acima. Caso não concorde, recomendamos que não prossiga com o preenchimento do cadastro.
+                  {'\n\n'}
+                  5. Reservamo-nos o direito de alterar este Termo de Consentimento a qualquer momento. Em caso de alterações significativas, você será notificado através do e-mail cadastrado.
+                </Text>
+              </ScrollView>
+              <TouchableOpacity onPress={closeModal} style={styles.closeModalButton}>
+                <Text style={styles.closeModalButtonText}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </ScrollView>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -211,8 +272,7 @@ const styles = StyleSheet.create({
     top: 100,
     left: 20,
     padding: 10,
-    zIndex: 10, 
-
+    zIndex: 10,
   },
   imageContainer: {
     alignItems: 'center',
@@ -256,24 +316,22 @@ const styles = StyleSheet.create({
     marginLeft: 25,
   },
   toggleButtonRight: {
-    alignSelf: 'flex-end',  
-    marginBottom: 10,       
+    alignSelf: 'flex-end', 
+    marginBottom: 10,      
   },
   toggleText: {
-    color: '#3B82F6',
+  color: '#2F5F98',
     fontSize: 14,
     marginRight: 30,
-
-  
   },
   button: {
     backgroundColor: '#07284B',
     height: 64,
-    width: '70%', 
+    width: '70%',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 25,
-    marginTop: 102,
+    marginTop: 45,
   },
   buttonText: {
     color: '#fff',
@@ -291,18 +349,76 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 0,
   },
-
   headerContainer: {
-  width: '100%',
-  backgroundColor: '#07284B',
-  alignItems: 'center',
-  paddingVertical: 25,
-  borderBottomLeftRadius: 30,
-  borderBottomRightRadius: 30, 
-},
+    width: '100%',
+    backgroundColor: '#07284B',
+    alignItems: 'center',
+    paddingVertical: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  termsCheckboxContainer: {
+    marginRight: 10,
+    marginLeft: 56,
+  },
+  termsCheckbox: {
+    fontSize: 20,
+    color: '#2F5F98',
+    marginTop: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+  },
+  termsText: {
+    color: '#3B82F6',
+    fontSize: 14,
+  },
+  termsTextButton: {
+    color: 'fff',
+    fontSize: 11,
+    marginRight: 58,
+    marginTop: 40,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    width: '82%',
+    height: '60%',
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTextContainer: {
+    maxHeight: 450,
+  },
+  modalText: {
+    fontSize: 9,
+    color: '#333',
+  },
+  closeModalButton: {
+    marginTop: 20,
+    backgroundColor: '#07284B',
+    padding: 10,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  closeModalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  termsButton: {
+    marginBottom: 30,
+    marginRight: 90,
+  }, 
 
-
-
-});
+ });
 
 export default RegisterScreen;
