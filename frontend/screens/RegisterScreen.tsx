@@ -387,7 +387,7 @@ profileText: {
   },
   termsTextButton: {
     color: 'fff',
-    fontSize: 11,
+    fontSize: 12,
     marginRight: 58,
     marginTop: 40,
   },
