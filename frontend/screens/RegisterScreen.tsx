@@ -130,7 +130,8 @@ const RegisterScreen: React.FC = () => {
           <Image source={{ uri: imageUri }} style={styles.profileImage} />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text>Add Imagem</Text>
+            <Image source={require('../assets/images/perfil.face.jpg')} style={styles.profileImage} />
+            <Text style={styles.profileText}>Adicione foto</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -283,15 +284,22 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+
   },
+
   profileImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
+    margin: 10,
+  
   },
+profileText: {
+  color: '#2F5F98',
+},
+
   welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
