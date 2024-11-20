@@ -5,10 +5,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as ImagePicker from 'expo-image-picker';
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { config } from '../config/env'
+import { config } from '../config/env';
 
 const Tab = createBottomTabNavigator();
 
+// Tela Home
 const HomeScreen = () => {
   return (
     <View style={styles.container}>
@@ -17,6 +18,7 @@ const HomeScreen = () => {
   );
 };
 
+// Tela Map
 const MapScreen = () => {
   return (
     <View style={styles.container}>
@@ -25,6 +27,7 @@ const MapScreen = () => {
   );
 };
 
+// Tela Settings
 const SettingsScreen = () => {
   const [userName, setUserName] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -113,7 +116,7 @@ const SettingsScreen = () => {
     <View style={styles.container}>
       <TouchableOpacity onPress={handlePickImage}>
         <Image
-          source={profileImage ? { uri: profileImage } : require('../assets/images/default-profile.png')}
+          source={profileImage ? { uri: profileImage } : require('../assets/images/perfil.face.jpg')}
           style={styles.profileImage}
         />
       </TouchableOpacity>
@@ -139,6 +142,17 @@ const SettingsScreen = () => {
   );
 };
 
+// Tela de Eventos
+const EventsScreen = () => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Eventos</Text>
+      {/* Aqui você pode adicionar a lista de eventos, informações ou qualquer outro conteúdo relevante */}
+    </View>
+  );
+};
+
+// Navegação Principal
 const MainTabNavigator = () => {
   return (
     <Tab.Navigator
@@ -152,7 +166,11 @@ const MainTabNavigator = () => {
             iconName = 'map-o';
           } else if (route.name === 'Settings') {
             iconName = 'cog';
+          } else if (route.name === 'Events') {
+            iconName = 'calendar'; 
+
           }
+
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#07284B',
@@ -162,11 +180,13 @@ const MainTabNavigator = () => {
     >
       <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Events" component={EventsScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 };
 
+// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
