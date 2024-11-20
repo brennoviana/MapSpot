@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Configurações
 PORT=3000
 ENV_PATH="frontend/.env"
