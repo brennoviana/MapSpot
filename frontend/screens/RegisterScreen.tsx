@@ -131,7 +131,7 @@ const RegisterScreen: React.FC = () => {
         ) : (
           <View style={styles.imagePlaceholder}>
             <Image source={require('../assets/images/perfil.face.jpg')} style={styles.profileImage} />
-            <Text style={styles.profileText}>Adicione foto</Text>
+            <Text style={styles.profileText}>Adicionar foto</Text>
           </View>
         )}
       </TouchableOpacity>
