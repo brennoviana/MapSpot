@@ -160,29 +160,29 @@ const MainTabNavigator = () => {
         tabBarIcon: ({ color, size }) => {
           let iconName = '';
 
-          if (route.name === 'Map') {
-            iconName = 'map-marker';
-          } else if (route.name === 'Home') {
-            iconName = 'map-o';
+          if (route.name === 'Home') {
+            iconName = 'home';  // Ícone de "home" como primeiro
+          } else if (route.name === 'Map') {
+            iconName = 'map-marker';  // Ícone de "mapa" como segundo
           } else if (route.name === 'Settings') {
             iconName = 'cog';
           } else if (route.name === 'Events') {
-            iconName = 'calendar'; 
-
+            iconName = 'calendar';
           }
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#07284B',
-        tabBarInactiveTintColor: 'gray',
-        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#07284B',  // Cor para o ícone ativo
+        tabBarInactiveTintColor: 'gray',   // Cor para o ícone inativo
+        tabBarShowLabel: false,            // Não mostrar o rótulo ao lado do ícone
       })}
     >
-      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Events" component={EventsScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
+
   );
 };
 
