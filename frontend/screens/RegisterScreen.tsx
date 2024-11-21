@@ -19,8 +19,8 @@ const RegisterScreen: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null); 
   const [showPassword, setShowPassword] = useState<boolean>(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false); 
-  const [modalVisible, setModalVisible] = useState<boolean>(false); // Estado para controlar a visibilidade do modal
-  const [isTermsAccepted, setIsTermsAccepted] = useState<boolean>(false); // Novo estado para controlar a caixa de seleção
+  const [modalVisible, setModalVisible] = useState<boolean>(false); 
+  const [isTermsAccepted, setIsTermsAccepted] = useState<boolean>(false); 
   const navigation = useNavigation<RegisterScreenNavigationProp>();
 
 
@@ -72,6 +72,11 @@ const RegisterScreen: React.FC = () => {
       formData.append('username', username);
       formData.append('password', password);
 
+      if (!isTermsAccepted) {
+        Alert.alert('Erro', 'Você precisa aceitar os termos para se cadastrar.');
+        return;
+      }
+
       if (imageUri) {
         formData.append('profileImage', {
           uri: imageUri,
@@ -113,12 +118,11 @@ const RegisterScreen: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Botão de seta para voltar ao login */}
+
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('login')}>
         <Ionicons name="arrow-back" size={35} color="#fff" />
       </TouchableOpacity>
 
-      {/* Contêiner azul arredondado */}
       <View style={styles.headerContainer}>
         <Image source={require('../assets/images/MAPSPOT.png')} style={styles.logo} />
       </View>
@@ -131,7 +135,7 @@ const RegisterScreen: React.FC = () => {
         ) : (
           <View style={styles.imagePlaceholder}>
             <Image source={require('../assets/images/perfil.face.jpg')} style={styles.profileImage} />
-            <Text style={styles.profileText}>Adicionar foto</Text>
+            <Text style={styles.profileText}>Adicione foto</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -146,7 +150,6 @@ const RegisterScreen: React.FC = () => {
         onChangeText={setUsername}
       />
 
-      {/* CPF */}
       <Text style={styles.label}>CPF</Text>
       <TextInput
         value={cpf}
@@ -157,7 +160,6 @@ const RegisterScreen: React.FC = () => {
         keyboardType="numeric"
       />
 
-      {/* E-Mail */}
       <Text style={styles.label}>E-Mail</Text>
       <TextInput
         style={styles.input}
@@ -167,7 +169,6 @@ const RegisterScreen: React.FC = () => {
         onChangeText={setEmail}
       />
 
-      {/* Senha */}
       <Text style={styles.label}>Senha</Text>
       <TextInput
         style={styles.input}
@@ -175,13 +176,13 @@ const RegisterScreen: React.FC = () => {
         placeholderTextColor="#A6A6A6"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry={!showPassword} // Controla se a senha é visível ou não
+        secureTextEntry={!showPassword}
       />
+
       <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.toggleButtonRight}>
         <Text style={styles.toggleText}>{showPassword ? 'Ocultar senha' : 'Mostrar senha'}</Text>
       </TouchableOpacity>
 
-      {/* Confirmar Senha */}
       <Text style={styles.label}>Confirmar Senha</Text>
       <TextInput
         style={styles.input}
@@ -189,31 +190,40 @@ const RegisterScreen: React.FC = () => {
         placeholderTextColor="#A6A6A6"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        secureTextEntry={!showConfirmPassword} // Controla se a confirmação da senha é visível ou não
+        secureTextEntry={!showConfirmPassword} 
       />
+
+      {confirmPassword.length > 0 && password !== confirmPassword && (
+      <Text
+        style={{color: 'red', fontSize: 12,alignSelf: 'flex-start',textAlign: 'left',      paddingLeft: 15,}}
+      >
+        As senhas não conferem
+      </Text>
+    )}
       <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.toggleButtonRight}>
         <Text style={styles.toggleText}>{showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}</Text>
       </TouchableOpacity>
 
-      {/* Aceitar essas permissões */}
       <View style={styles.termsContainer}>
-        <TouchableOpacity
-          style={styles.termsCheckboxContainer}
-          onPress={() => setIsTermsAccepted(!isTermsAccepted)}
-        >
-          <Text style={styles.termsCheckbox}>{isTermsAccepted ? '✓' : '⬜'}</Text>
-        </TouchableOpacity>
-        <Text style={styles.termsTextButton}>
-          Aceitar essas permissões significa que você permite que este aplicativo use seus dados conforme especificado em Termo de Consentimento localizado abaixo:
-        </Text>
-      </View>
+      <TouchableOpacity
+        style={styles.termsCheckboxContainer}
+        onPress={() => setIsTermsAccepted(!isTermsAccepted)}
+      >
+        <Ionicons
+          name={isTermsAccepted ? 'checkbox' : 'square-outline'}
+          size={30}
+          color={isTermsAccepted ? '#07284B' : '#BDBDBD'} 
+        />
+      </TouchableOpacity>
+      <Text style={styles.termsTextButton}>
+        Aceitar essas permissões significa que você permite que este aplicativo use seus dados conforme especificado em Termo de Consentimento localizado abaixo:
+      </Text>
+    </View>
 
-      {/* Termo de Consentimento */}
       <TouchableOpacity onPress={openModal} style={styles.termsButton}>
         <Text style={styles.termsText}>Leia o Termo de Consentimento aqui</Text>
       </TouchableOpacity>
 
-      {/* Botão de Cadastrar */}
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
@@ -222,40 +232,38 @@ const RegisterScreen: React.FC = () => {
         <Text style={styles.loginText}>Já tem conta? Voltar ao login</Text>
       </TouchableOpacity>
 
-      {/* Modal para exibir o termo completo */}
       <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={closeModal}>
-        <TouchableWithoutFeedback onPress={closeModal}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <ScrollView style={styles.modalTextContainer}>
-                <Text style={styles.modalText}>
-                                    {/* O conteúdo completo do termo de consentimento aqui */}
-                                    Termo de Consentimento para Tratamento e Armazenamento de Dados Pessoais
-                  {'\n\n'}
-                  Ao realizar o cadastro no MapSpot, você concorda com a coleta, tratamento e armazenamento de seus dados pessoais, conforme descrito abaixo, de acordo com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/18 - LGPD):
-                  {'\n\n'}
-                  1. Os dados fornecidos por você, como nome, e-mail, CPF, endereço e demais informações relevantes para o cadastro, serão coletados e tratados exclusivamente para fins de criação de conta, fornecimento de serviços, personalização da experiência do usuário e comunicação relacionada à sua utilização do MapSpot.
-                  {'\n\n'}
-                  2. Os dados pessoais serão armazenados de forma segura em nossos servidores, com acesso restrito e adotando medidas adequadas para garantir a sua proteção contra acessos não autorizados, vazamentos ou quaisquer outros incidentes de segurança.
-                  {'\n\n'}
-                  3. Você tem o direito de acessar, corrigir, atualizar, ou excluir seus dados pessoais a qualquer momento. Caso deseje exercer qualquer um desses direitos ou tenha dúvidas sobre o tratamento de seus dados, entre em contato conosco através do e-mail: mapspot.marica.suporte@gmail.com.
-                  {'\n\n'}
-                  4. Ao prosseguir com o cadastro, você declara estar ciente e de acordo com os termos deste consentimento, autorizando o tratamento dos seus dados pessoais conforme descrito acima. Caso não concorde, recomendamos que não prossiga com o preenchimento do cadastro.
-                  {'\n\n'}
-                  5. Reservamo-nos o direito de alterar este Termo de Consentimento a qualquer momento. Em caso de alterações significativas, você será notificado através do e-mail cadastrado.
-                </Text>
-              </ScrollView>
-              <TouchableOpacity onPress={closeModal} style={styles.closeModalButton}>
-                <Text style={styles.closeModalButtonText}>Fechar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      visible={modalVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={closeModal}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          {/* ScrollView para tornar o conteúdo rolável */}
+          <ScrollView style={styles.modalTextContainer}>
+            <Text style={styles.modalText}>
+              Termo de Consentimento para Tratamento e Armazenamento de Dados Pessoais
+              {'\n\n'}
+              Ao realizar o cadastro no MapSpot, você concorda com a coleta, tratamento e armazenamento de seus dados pessoais, conforme descrito abaixo, de acordo com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/18 - LGPD):
+              {'\n\n'}
+              1. Os dados fornecidos por você, como nome, e-mail, CPF, endereço e demais informações relevantes para o cadastro, serão coletados e tratados exclusivamente para fins de criação de conta, fornecimento de serviços, personalização da experiência do usuário e comunicação relacionada à sua utilização do MapSpot.
+              {'\n\n'}
+              2. Os dados pessoais serão armazenados de forma segura em nossos servidores, com acesso restrito e adotando medidas adequadas para garantir a sua proteção contra acessos não autorizados, vazamentos ou quaisquer outros incidentes de segurança.
+              {'\n\n'}
+              3. Você tem o direito de acessar, corrigir, atualizar, ou excluir seus dados pessoais a qualquer momento. Caso deseje exercer qualquer um desses direitos ou tenha dúvidas sobre o tratamento de seus dados, entre em contato conosco através do e-mail: mapspot.marica.suporte@gmail.com.
+              {'\n\n'}
+              4. Ao prosseguir com o cadastro, você declara estar ciente e de acordo com os termos deste consentimento, autorizando o tratamento dos seus dados pessoais conforme descrito acima. Caso não concorde, recomendamos que não prossiga com o preenchimento do cadastro.
+              {'\n\n'}
+              5. Reservamo-nos o direito de alterar este Termo de Consentimento a qualquer momento. Em caso de alterações significativas, você será notificado através do e-mail cadastrado.
+            </Text>
+          </ScrollView>
+
+          <TouchableOpacity onPress={closeModal} style={styles.closeModalButton}>
+            <Text style={styles.closeModalButtonText}>Fechar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
     </ScrollView>
   );
 };
@@ -312,7 +320,7 @@ profileText: {
     width: '90%',
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 40,
+    marginBottom: 30,
     paddingLeft: 10,
     borderRadius: 15,
   },
@@ -386,11 +394,12 @@ profileText: {
     fontSize: 14,
   },
   termsTextButton: {
-    color: 'fff',
+    color: '#A6A6A6',
     fontSize: 12,
     marginRight: 58,
     marginTop: 40,
   },
+
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
@@ -408,8 +417,10 @@ profileText: {
     maxHeight: 450,
   },
   modalText: {
-    fontSize: 9,
+    fontSize: 15,
     color: '#333',
+    
+    
   },
   closeModalButton: {
     marginTop: 20,

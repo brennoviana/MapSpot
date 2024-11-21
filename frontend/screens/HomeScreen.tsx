@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon2 from 'react-native-vector-icons/Foundation';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as ImagePicker from 'expo-image-picker';
 import axios, { AxiosError } from 'axios';
@@ -115,10 +116,11 @@ const SettingsScreen = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handlePickImage}>
-        <Image
-          source={profileImage ? { uri: profileImage } : require('../assets/images/perfil.face.jpg')}
-          style={styles.profileImage}
-        />
+      <Image
+        source= {require('../assets/images/perfil.face.jpg')}
+        style={styles.profileImage}
+      />
+  
       </TouchableOpacity>
 
       <Text style={styles.userName}>{userName}</Text>
@@ -159,18 +161,20 @@ const MainTabNavigator = () => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName = '';
-
+          let IconComponent = Icon;
+        
           if (route.name === 'Home') {
-            iconName = 'home';  // Ícone de "home" como primeiro
+            iconName = 'home';
+            IconComponent = Icon2; 
           } else if (route.name === 'Map') {
-            iconName = 'map-marker';  // Ícone de "mapa" como segundo
+            iconName = 'map-marker'; 
           } else if (route.name === 'Settings') {
-            iconName = 'cog';
+            iconName = 'cog'; 
           } else if (route.name === 'Events') {
-            iconName = 'calendar';
+            iconName = 'calendar'; 
           }
-
-          return <Icon name={iconName} size={size} color={color} />;
+        
+          return <IconComponent name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#07284B',  // Cor para o ícone ativo
         tabBarInactiveTintColor: 'gray',   // Cor para o ícone inativo
