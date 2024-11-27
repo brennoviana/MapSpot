@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, FlatList, Modal, ScrollView, Button } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, FlatList, Modal, ScrollView, Button, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon2 from 'react-native-vector-icons/Foundation';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -13,7 +13,7 @@ import { config } from '../config/env';
 import MapView, { Marker } from "react-native-maps";
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { GooglePlacesAutocomplete, GooglePlaceData, GooglePlaceDetail } from "react-native-google-places-autocomplete";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,50 +33,28 @@ const HomeScreen = () => {
     { id: 2, name: 'Endereço 2 - Rua Jacinto Pinto, 14', distance: '800m', rating: 4 },
   ]);
 
-  // Função de busca futura, para conectar com a API ou backend
- // const handleSearch = (query) => {
-    //setSearch(query);
-     //Aqui, no futuro, você pode fazer a requisição para buscar os resultados
-  //};
-
   return (
     <View style={styles.container}>
       {/* Barra de busca */}
       <View style={styles.searchContainer}>
-        <Text style={styles.greeting}>{"{Usuário}, Qual seu próximo destino?"}</Text>
-        <GooglePlacesAutocomplete
+      <Text style={styles.greeting}>Usuário, Qual seu próximo destino?</Text>
+      <View style={styles.searchBar}>
+      <GooglePlacesAutocomplete
         placeholder="Search"
-        onPress={(data, details = null) => {
-          // 'details' contém informações completas do lugar
-          console.log(data, details);
-        }}
         query={{
-          key: "AIzaSyBOHnUBuNpRoyT2tcA2DC8isX4IKtIyQ2w",
-          language: 'pt-BR',
-          types: '(cities)',
-        }} onFail={(error) => console.log('Erro:', error)}
-        fetchDetails={false} // Obtém detalhes do lugar selecionado
-        styles={{
-          textInputContainer: styles.textInputContainer,
-          textInput: styles.textInput,
+          key: config.GOOGLE_API_KEY,
+          language: 'pt-BR', // language of the results
         }}
+        onPress={(data, details = null) => console.log(data)}
+        onFail={(error) => console.log(error)}
+        requestUrl={{
+          url:
+            'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
+          useOnPlatform: 'web',
+        }} // this in only required for use on the web. See https://git.io/JflFv more for details.
       />
       </View>
-
-      {/* Caixa de resultados */}
-      {search !== '' && (
-        <FlatList
-          data={results}
-          renderItem={({ item }) => (
-            <View style={styles.resultItem}>
-              <Text style={styles.resultText}>{item.name}</Text>
-              <Text style={styles.resultDistance}>{item.distance}</Text>
-              <Text style={styles.resultRating}>{item.rating} estrelas</Text>
-            </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
-      )}
+    </View>
 
       {/* Mapa */}
       <MapView
@@ -97,7 +75,7 @@ const HomeScreen = () => {
           description="Você está aqui!"
         />
       </MapView>
-
+      
       {/* Detalhes do campo selecionado */}
       <View style={styles.fieldDetails}>
         <Image
@@ -746,13 +724,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",},
 
   searchContainer: {
+    position: 'absolute',
+    top:0,
     backgroundColor: '#001946',
     width: '100%',
+    height: 130,
     paddingTop: 35,
     paddingHorizontal: 20,
     paddingBottom: 30,
     borderBottomEndRadius: 10,
     borderBottomStartRadius: 10,
+    zIndex: 1000,
   },
 
   resultText: {
@@ -959,14 +941,27 @@ const styles = StyleSheet.create({
   },
 
   textInputContainer: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 10,
-    borderRadius: 5,
+    backgroundColor: 'rgba(0,0,0,0)',
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    width: '100%'
   },
   textInput: {
-    height: 40,
+    marginLeft: 0,
+    marginRight: 0,
+    height: 38,
+    color: '#5d5d5d',
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8
   },
+
+
+  searchBar: {
+    height: 500,
+
+  }
 });
 
 
