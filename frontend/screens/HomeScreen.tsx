@@ -29,8 +29,8 @@ const HomeScreen = () => {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([
     // Lista inicial de resultados fictícios, removível quando a integração estiver pronta
-    { id: 1, name: 'Endereço 1 - Rua Jacinto Pinto, 14', distance: '500m', rating: 5 },
-    { id: 2, name: 'Endereço 2 - Rua Jacinto Pinto, 14', distance: '800m', rating: 4 },
+    { id: 1, name: 'Av. Roberto Silveira, 437 - Maricá, 14', distance: '500m', rating: 5 },
+    { id: 2, name: 'Av. Roberto Silveira, 487 -  Maricá', distance: '800m', rating: 4 },
   ]);
 
   return (
@@ -83,7 +83,7 @@ const HomeScreen = () => {
           style={styles.fieldImage}
         />
         <View style={styles.fieldInfo}>
-          <Text style={styles.fieldName}>Endereço 1 - Rua Jacinto Pinto, 14</Text>
+          <Text style={styles.fieldName}>Endereço 1 - Rua Prefeito Joaquim Mendes, 79</Text>
           <View style={styles.ratingContainer}>
             {[...Array(5)].map((_, index) => (
               <Icon key={index} name="star" size={16} color="#FFD700" />

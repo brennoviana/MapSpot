@@ -1,19 +1,4 @@
 services:
-  # expo:
-    # build:
-    #   context: .
-    #   dockerfile: frontend/Dockerfile
-    # container_name: expo-app
-    # ports:
-    #   - '19000:19000'
-    #   - '19001:19001'
-    #   - '19002:19002'
-    # volumes:
-    #   - ./frontend:/app
-    # command: npm run start
-    # environment:
-    #   - EXPO_DEVTOOLS_LISTEN_PORT=19002
-
   express:
     build:
       context: .
@@ -41,9 +26,41 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DATABASE}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  express-location:
+    build:
+      context: .
+      dockerfile: backend/services/location/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT_LOCATION=${PORT_LOCATION}
+      - JWT_SECRET=${JWT_SECRET}
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_HOST=${MONGO_HOST}
+      - MONGO_PORT=${MONGO_PORT}
+      - MONGO_DATABASE=${MONGO_DATABASE}
+    networks:
+      - app-network
+    depends_on:
+      - mongo_db
+
+  mongo_db:
+    image: mongo:latest
+    container_name: mongo_container
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
     networks:
       - app-network
 
@@ -53,3 +70,4 @@ networks:
 
 volumes:
   postgres_data:
+  mongo_data:
