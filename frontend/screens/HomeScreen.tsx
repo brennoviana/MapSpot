@@ -1,32 +1,119 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  Alert,
-  Modal,
-  ScrollView,
-  Button,
-} from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import Icon2 from "react-native-vector-icons/Foundation";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import * as ImagePicker from "expo-image-picker";
-import axios, { AxiosError } from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { config } from "../config/env";
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, FlatList, Modal, ScrollView, Button } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon2 from 'react-native-vector-icons/Foundation';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as ImagePicker from 'expo-image-picker';
+import axios, { AxiosError } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { config } from '../config/env';
+import MapView, { Marker } from "react-native-maps";
+import { RootStackParamList } from './types';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
+
+
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'home'>;
+
+
 
 const Tab = createBottomTabNavigator();
 
 // Tela Home
 const HomeScreen = () => {
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([
+    // Lista inicial de resultados fictícios, removível quando a integração estiver pronta
+    { id: 1, name: 'Av. Roberto Silveira, 437 - Maricá, 14', distance: '500m', rating: 5 },
+    { id: 2, name: 'Av. Roberto Silveira, 487 -  Maricá', distance: '800m', rating: 4 },
+  ]);
+
+  // Função de busca futura, para conectar com a API ou backend
+ // const handleSearch = (query) => {
+    //setSearch(query);
+     //Aqui, no futuro, você pode fazer a requisição para buscar os resultados
+  //};
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home Screen</Text>
+      {/* Barra de busca */}
+      <View style={styles.searchContainer}>
+        <Text style={styles.greeting}>{"{Usuário}, Qual seu próximo destino?"}</Text>
+        <GooglePlacesAutocomplete
+        placeholder="Search"
+        onPress={(data, details = null) => {
+          // 'details' contém informações completas do lugar
+          console.log(data, details);
+        }}
+        query={{
+          key: "AIzaSyBOHnUBuNpRoyT2tcA2DC8isX4IKtIyQ2w",
+          language: 'pt-BR',
+          types: '(cities)',
+        }} onFail={(error) => console.log('Erro:', error)}
+        fetchDetails={false} // Obtém detalhes do lugar selecionado
+        styles={{
+          textInputContainer: styles.textInputContainer,
+          textInput: styles.textInput,
+        }}
+      />
+      </View>
+
+      {/* Caixa de resultados */}
+      {search !== '' && (
+        <FlatList
+          data={results}
+          renderItem={({ item }) => (
+            <View style={styles.resultItem}>
+              <Text style={styles.resultText}>{item.name}</Text>
+              <Text style={styles.resultDistance}>{item.distance}</Text>
+              <Text style={styles.resultRating}>{item.rating} estrelas</Text>
+            </View>
+          )}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      )}
+
+      {/* Mapa */}
+      <MapView
+        style={styles.map}
+        region={{
+          latitude: -22.9333,
+          longitude: -42.8167,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        <Marker
+          coordinate={{
+            latitude: -23.5505,
+            longitude: -46.6333,
+          }}
+          title="Sua localização"
+          description="Você está aqui!"
+        />
+      </MapView>
+
+      {/* Detalhes do campo selecionado */}
+      <View style={styles.fieldDetails}>
+        <Image
+          source={{ uri: 'https://via.placeholder.com/60' }} // Imagem de exemplo, trocar na futura integração
+          style={styles.fieldImage}
+        />
+        <View style={styles.fieldInfo}>
+          <Text style={styles.fieldName}>Endereço 1 - Rua Prefeito Joaquim Mendes, 79</Text>
+          <View style={styles.ratingContainer}>
+            {[...Array(5)].map((_, index) => (
+              <Icon key={index} name="star" size={16} color="#FFD700" />
+            ))}
+            <Text style={styles.reviewCount}>(123 avaliações)</Text> {/* Número fictício */}
+          </View>
+        </View>
+      </View>
     </View>
   );
 };
@@ -128,6 +215,9 @@ const SettingsScreen = () => {
     );
   };
 
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
+
   const handleLogout = () => {
     setIsModalVisible(true);  // Exibe o modal de confirmação ao sair
   };
@@ -136,6 +226,7 @@ const SettingsScreen = () => {
     // Lógica de logout, pode ser limpar os dados de login e redirecionar
     setIsModalVisible(false); // Fecha o modal
     Alert.alert("Você foi desconectado.");
+    navigation.navigate('login');
   };
 
   const handleCancelLogout = () => {
@@ -512,7 +603,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
-    padding: 20,
   },
   header: {
     fontSize: 24,
@@ -653,7 +743,128 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#07284B',
     paddingHorizontal: 16,
-    justifyContent: "center",
+    justifyContent: "center",},
+
+  searchContainer: {
+    backgroundColor: '#001946',
+    width: '100%',
+    paddingTop: 35,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+    borderBottomEndRadius: 10,
+    borderBottomStartRadius: 10,
+  },
+
+  resultText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#333',
+  },
+  greeting: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 25,
+    marginTop: 10,
+    paddingHorizontal: 15,
+    height: 40,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  resultsContainer: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 20,
+    marginHorizontal: 20,
+    padding: 10,
+    position: 'absolute',
+    top: 130,
+    width: '90%',
+    zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  resultsTitle: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  map: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    margin:0,
+  },
+
+  fieldDetails: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  fieldImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 10,
+  },
+  fieldInfo: {
+    flex: 1,
+  },
+  fieldName: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    color: '#333',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  reviewCount: {
+    marginLeft: 5,
+    fontSize: 12,
+    color: '#666',
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  resultDistance: {
+    fontSize: 14,
+    color: '#666',
+  },
+  resultRating: {
+    fontSize: 14,
+    color: '#666',
   },
   containerEvents: {
     flex: 1,
@@ -746,7 +957,18 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
   },
+
+  textInputContainer: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  textInput: {
+    height: 40,
+    fontSize: 16,
+  },
 });
+
 
 
 

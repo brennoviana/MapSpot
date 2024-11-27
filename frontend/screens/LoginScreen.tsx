@@ -14,11 +14,9 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { config } from '../config/env'
-type RootStackParamList = {
-  login: undefined;
-  register: undefined;
-  home: undefined;
-};
+import { RootStackParamList } from './types';
+
+
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'login'>;
 
