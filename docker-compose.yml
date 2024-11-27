@@ -47,6 +47,21 @@ services:
     networks:
       - app-network
 
+  mongo:
+    image: mongo:latest
+    container_name: mongo_container
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+
+    volumes:
+      - /mnt/mongo_data:/data/db
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
