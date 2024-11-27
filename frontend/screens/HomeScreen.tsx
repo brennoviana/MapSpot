@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Alert,
   Modal,
+  ScrollView,
+  Button,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Icon2 from "react-native-vector-icons/Foundation";
@@ -309,10 +311,160 @@ const SettingsScreen = () => {
 
 // Tela de Eventos
 const EventsScreen = () => {
+  // Lista inicial de eventos
+  const [events, setEvents] = useState([
+    {
+      id: 1,
+      time: "12:30 - 14:00",
+      category: "Inteligência Emocional",
+      title: "Como fazer amigos e influenciar pessoas",
+      location: "Sala 2",
+      color: "#9c27b0", // Roxo
+    },
+    {
+      id: 2,
+      time: "14:30 - 17:00",
+      category: "Design",
+      title: "O futuro do Design - Projetando a próxima geração",
+      location: "Auditório 3",
+      color: "#2196f3", // Azul
+    },
+    {
+      id: 3,
+      time: "14:30 - 17:00",
+      category: "Marketing",
+      title: "Pesquisa e Inovação",
+      location: "Auditório 2",
+      color: "#ff9800", // Laranja
+    },
+  ]);
+
+  const [selectedCategory, setSelectedCategory] = useState("Design"); // Categoria ativa
+  const [modalVisible, setModalVisible] = useState(false); // Controle do modal de cadastro
+  const [newEvent, setNewEvent] = useState({
+    time: "",
+    category: "",
+    title: "",
+    location: "",
+    color: "",
+  });
+
+  // Função para adicionar um evento
+  const addEvent = () => {
+    if (
+      newEvent.time &&
+      newEvent.category &&
+      newEvent.title &&
+      newEvent.location &&
+      newEvent.color
+    ) {
+      setEvents([
+        ...events,
+        { ...newEvent, id: events.length + 1 },
+      ]);
+      setModalVisible(false); // Fechar o modal
+      setNewEvent({ time: "", category: "", title: "", location: "", color: "" }); // Resetar formulário
+    }
+  };
+
+  // Filtro de eventos pela categoria selecionada
+  const filteredEvents = events.filter(
+    (event) => event.category === selectedCategory
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Eventos</Text>
-      {/* Aqui você pode adicionar a lista de eventos, informações ou qualquer outro conteúdo relevante */}
+    <View style={styles.containerEvents}>
+      {/* Header com categorias */}
+      <View style={styles.headerEvents}>
+        {["Tecnologia", "Design", "Marketing"].map((category) => (
+          <TouchableOpacity
+            key={category}
+            onPress={() => setSelectedCategory(category)}
+          >
+            <Text
+              style={[
+                styles.tab,
+                selectedCategory === category && styles.activeTab,
+              ]}
+            >
+              {category}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Botão para adicionar evento */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.addButtonText}>+ Adicionar Evento</Text>
+      </TouchableOpacity>
+
+      {/* Lista de eventos */}
+      <ScrollView>
+        {filteredEvents.map((event) => (
+          <View
+            key={event.id}
+            style={[styles.eventCard, { borderLeftColor: event.color }]}
+          >
+            <Text style={styles.eventTime}>{event.time}</Text>
+            <View style={styles.eventDetails}>
+              <Text
+                style={[
+                  styles.categoryLabel,
+                  { backgroundColor: event.color },
+                ]}
+              >
+                {event.category}
+              </Text>
+              <Text style={styles.eventTitle}>{event.title}</Text>
+              <Text style={styles.eventLocation}>📍 {event.location}</Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Modal para cadastro de eventos */}
+      <Modal visible={modalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitleEvent}>Cadastrar Novo Evento</Text>
+          <TextInput
+            placeholder="Horário (ex: 12:30 - 14:00)"
+            style={styles.inputEvent}
+            value={newEvent.time}
+            onChangeText={(text) => setNewEvent({ ...newEvent, time: text })}
+          />
+          <TextInput
+            placeholder="Categoria (ex: Design)"
+            style={styles.inputEvent}
+            value={newEvent.category}
+            onChangeText={(text) =>
+              setNewEvent({ ...newEvent, category: text })
+            }
+          />
+          <TextInput
+            placeholder="Título"
+            style={styles.inputEvent}
+            value={newEvent.title}
+            onChangeText={(text) => setNewEvent({ ...newEvent, title: text })}
+          />
+          <TextInput
+            placeholder="Localização"
+            style={styles.inputEvent}
+            value={newEvent.location}
+            onChangeText={(text) =>
+              setNewEvent({ ...newEvent, location: text })
+            }
+          />
+          <Button title="Salvar" onPress={addEvent} />
+          <Button
+            title="Cancelar"
+            onPress={() => setModalVisible(false)}
+            color="red"
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -502,6 +654,97 @@ const styles = StyleSheet.create({
     backgroundColor: '#07284B',
     paddingHorizontal: 16,
     justifyContent: "center",
+  },
+  containerEvents: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  headerEvents: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 10,
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  tab: {
+    fontSize: 16,
+    color: "#777",
+  },
+  activeTab: {
+    color: '#07284B',
+    fontWeight: "bold",
+  },
+  addButton: {
+    backgroundColor: '#07284B',
+    padding: 10,
+    margin: 10,
+    borderRadius: 5,
+  },
+  addButtonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  eventCard: {
+    flexDirection: "row",
+    margin: 10,
+    padding: 10,
+    borderLeftWidth: 5,
+    borderRadius: 5,
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  eventTime: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#555",
+    marginRight: 10,
+  },
+  eventDetails: {
+    flex: 1,
+  },
+  categoryLabel: {
+    alignSelf: "flex-start",
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#fff",
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    marginBottom: 5,
+  },
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 5,
+  },
+  eventLocation: {
+    fontSize: 14,
+    color: "#777",
+  },
+  modalContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: "center",
+  },
+  modalTitleEvent: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  inputEvent: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });
 
