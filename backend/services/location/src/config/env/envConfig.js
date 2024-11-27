@@ -1,11 +1,13 @@
 import "dotenv/config";
 
+import "dotenv/config";
+
 export const config = {
-  postgresDatabase: process.env.POSTGRES_DATABASE,
-  postgresUsername: process.env.POSTGRES_USER,
-  postgresPassword: process.env.POSTGRES_PASSWORD,
-  postgresHost: process.env.POSTGRES_HOST_DB,
-  postgresPort: process.env.POSTGRES_PORT,
+  mongoDatabase: process.env.MONGO_DATABASE,
+  mongoUsername: process.env.MONGO_USERNAME,
+  mongoPassword: process.env.MONGO_PASSWORD,
+  mongoHost: process.env.MONGO_HOST,
+  mongoPort: process.env.MONGO_PORT,
   portApi: process.env.PORT,
   jwtSecret: process.env.JWT_SECRET,
 };

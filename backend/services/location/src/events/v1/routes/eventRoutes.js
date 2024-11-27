@@ -1,26 +1,26 @@
 import { Router } from "express";
-import { userController } from "../controller/eventController.js";
-import { userCreateSchema } from "../schema/eventCreateSchema.js";
+import { eventController } from "../controller/eventController.js";
+// import { userCreateSchema } from "../schema/eventCreateSchema.js";
 // import { validateRequestSchema } from "../../../generic-middlewares/validateRequestSchema.js";
 import { authenticateJWT } from "../../../generic-middlewares/authenticateJWT.js";
 // import { validateUserExists } from "../middlewares/validateUserExists.js";
 // import { userUpdateSchema } from "../schema/userUpdateSchema.js";
 
-const userRoutes = Router();
+const eventRoutes = Router();
 
-userRoutes.get("/", authenticateJWT, userController.getUsers);
+eventRoutes.get("/", authenticateJWT, eventController.getEvents);
 
-userRoutes.get(
+eventRoutes.get(
   "/:id",
   authenticateJWT,
   // validateUserExists,
-  userController.getUserById,
+  eventController.getEventById,
 );
 
-userRoutes.post(
+eventRoutes.post(
   "/",
-  validateRequestSchema(userCreateSchema),
-  userController.createUser,
+  // validateRequestSchema(userCreateSchema),
+  eventController.createEvent,
 );
 
 // userRoutes.put(
@@ -39,4 +39,4 @@ userRoutes.post(
 //   userController.deleteUser,
 // );
 
-export { userRoutes };
+export { eventRoutes };
