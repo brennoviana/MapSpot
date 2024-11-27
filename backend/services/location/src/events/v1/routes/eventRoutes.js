@@ -1,25 +1,21 @@
 import { Router } from "express";
 import { eventController } from "../controller/eventController.js";
-// import { userCreateSchema } from "../schema/eventCreateSchema.js";
-// import { validateRequestSchema } from "../../../generic-middlewares/validateRequestSchema.js";
-import { authenticateJWT } from "../../../generic-middlewares/authenticateJWT.js";
-// import { validateUserExists } from "../middlewares/validateUserExists.js";
-// import { userUpdateSchema } from "../schema/userUpdateSchema.js";
+import { eventCreateSchema } from "../schema/eventCreateSchema.js";
+import { validateRequestSchema } from "../../../generic-middlewares/validateRequestSchema.js";
 
 const eventRoutes = Router();
 
-eventRoutes.get("/", authenticateJWT, eventController.getEvents);
+eventRoutes.get("/", eventController.getEvents);
 
 eventRoutes.get(
   "/:id",
-  authenticateJWT,
   // validateUserExists,
   eventController.getEventById,
 );
 
 eventRoutes.post(
   "/",
-  // validateRequestSchema(userCreateSchema),
+  validateRequestSchema(eventCreateSchema),
   eventController.createEvent,
 );
 
