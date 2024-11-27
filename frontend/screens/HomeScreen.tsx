@@ -15,12 +15,8 @@ import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { GooglePlacesAutocomplete, GooglePlaceData, GooglePlaceDetail } from "react-native-google-places-autocomplete";
 import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
-
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'home'>;
-
-
 
 const Tab = createBottomTabNavigator();
 
