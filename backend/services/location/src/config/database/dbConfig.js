@@ -3,6 +3,7 @@ import { config } from '../env/envConfig.js';
 
 export const connectToMongo = async () => {
     try {
+        console.log(config);
         await mongoose.connect(`mongodb://${config.mongoUsername}:${config.mongoPassword}@${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}?authSource=admin`);
         console.log('Connected to MongoDB successfully.');
     } catch (error) {

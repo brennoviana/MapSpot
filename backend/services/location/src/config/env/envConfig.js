@@ -8,6 +8,6 @@ export const config = {
   mongoHost: process.env.MONGO_HOST,
   mongoPort: process.env.MONGO_PORT,
   mongoDatabase: process.env.MONGO_DATABASE,
-  portApi: process.env.PORT,
+  portApi: process.env.PORT_LOCATION,
   jwtSecret: process.env.JWT_SECRET
 };
