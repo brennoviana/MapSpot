@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { config } from '../env/envConfig.js';
 
-console.log(config);
 export const connectToMongo = async () => {
     try {
         await mongoose.connect(`mongodb://${config.mongoUsername}:${config.mongoPassword}@${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}?authSource=admin`);
