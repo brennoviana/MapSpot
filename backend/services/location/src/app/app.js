@@ -11,7 +11,4 @@ app.use(cors());
 
 app.use("/api/v1/event", eventRoutes);
 
-// Exemplo rota com autenticação
-// app.use("/api/v1/posts", authenticateJWT, postRoutes);
-
 export { app };
