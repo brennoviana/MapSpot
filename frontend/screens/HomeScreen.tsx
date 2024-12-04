@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, FlatList, Modal, ScrollView, Button, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, Modal, ScrollView, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon2 from 'react-native-vector-icons/Foundation';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -13,7 +13,7 @@ import { config } from '../config/env';
 import MapView, { Marker } from "react-native-maps";
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { GooglePlacesAutocomplete, GooglePlaceData, GooglePlaceDetail } from "react-native-google-places-autocomplete";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import * as Location from 'expo-location';
 import { Linking } from 'react-native';
 import 'react-native-get-random-values';
@@ -38,13 +38,11 @@ type Location = {
   website?: string;
 };
 
-// Tela Home
 const HomeScreen = () => {
   const [userName, setUserName] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [userLocation, setUserLocation] = useState<Location | null>(null);
 
-  // Função para buscar o nome do usuário
   const fetchUserData = async () => {
     try {
       const storedUserName = await AsyncStorage.getItem("username");
@@ -56,10 +54,9 @@ const HomeScreen = () => {
 
   useEffect(() => {
     fetchUserData();
-    getUserLocation(); // Chama a função para obter a localização do usuário
+    getUserLocation();
   }, []);
 
-  // Função para pegar a localização atual do usuário
   const getUserLocation = async () => {
     const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -78,11 +75,10 @@ const HomeScreen = () => {
         lat: location.coords.latitude,
         lng: location.coords.longitude,
       },
-      photoUrl: '', // Você pode adicionar uma imagem aqui se necessário
+      photoUrl: '',
     });
   };
 
-  // Função para buscar detalhes de um lugar
   const fetchPlaceDetails = async (placeId: string) => {
     const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${config.GOOGLE_API_KEY}`);
     const data = await response.json();
@@ -90,12 +86,11 @@ const HomeScreen = () => {
     if (data.result) {
       const placeDetails = {
         photoUrl: '',
-        rating: data.result.rating || null, // Média das avaliações
-        userRatingsTotal: data.result.user_ratings_total || 0, // Número de avaliações
-        website: data.result.website || null, // URL do site
+        rating: data.result.rating || null,
+        userRatingsTotal: data.result.user_ratings_total || 0,
+        website: data.result.website || null,
       };
   
-      // Busca a foto do local, se disponível
       if (data.result.photos && data.result.photos.length > 0) {
         const photoReference = data.result.photos[0].photo_reference;
         placeDetails.photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${config.GOOGLE_API_KEY}`;
@@ -108,7 +103,6 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Barra de busca */}
       <View style={styles.searchContainer}>
         <Text style={styles.greeting}>{userName}, Qual seu próximo destino?</Text>
         <View style={styles.searchBar}>
@@ -159,9 +153,7 @@ const HomeScreen = () => {
             onFail={(error) => console.log(error)}
             renderDescription={(row) => {
               const name = row.structured_formatting.main_text;
-              // Divide o endereço completo e pega cidade e estado
               const addressParts = row.structured_formatting.secondary_text.split(',');
-              // Exibe nome do estabelecimento e cidade/estado
               const cityState = addressParts.length > 1 ? `${addressParts[addressParts.length - 2]}, ${addressParts[addressParts.length - 1]}` : '';
               return `${name} - ${cityState}`;
             }}        
@@ -209,7 +201,6 @@ const HomeScreen = () => {
         )}
       </MapView>
       
-      {/* Detalhes do campo selecionado */}
       {selectedLocation && (
         <View style={styles.fieldDetails}>
           {selectedLocation.establishmentPhotoUrl && (
@@ -258,8 +249,6 @@ const HomeScreen = () => {
   );
 };
 
-
-// Tela Settings
 const SettingsScreen = () => {
   const [showPersonalData, setShowPersonalData] = useState(false); 
   const [isExpanded, setIsExpanded] = useState(false); 
@@ -351,21 +340,19 @@ const SettingsScreen = () => {
 
 
   const handleLogout = () => {
-    setIsModalVisible(true);  // Exibe o modal de confirmação ao sair
+    setIsModalVisible(true);
   };
 
   const handleConfirmLogout = () => {
-    // Lógica de logout, pode ser limpar os dados de login e redirecionar
-    setIsModalVisible(false); // Fecha o modal
+    setIsModalVisible(false);
     Alert.alert("Você foi desconectado.");
     navigation.navigate('login');
   };
 
   const handleCancelLogout = () => {
-    setIsModalVisible(false); // Fecha o modal
+    setIsModalVisible(false);
   };
 
-  // Se o usuário clicar em Dados Pessoais, mostrar as informações
   if (showPersonalData) {
     return (
       <View style={styles.containerSettings}>
@@ -391,7 +378,6 @@ const SettingsScreen = () => {
           <Text style={styles.deleteAccountText}>Excluir Conta</Text>
         </TouchableOpacity>
 
-        {/* Botão para voltar */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setShowPersonalData(false)}
@@ -403,12 +389,10 @@ const SettingsScreen = () => {
     );
   }
 
-  // Tela Principal
   return (
     <View style={styles.containerSettings}>
       <Text style={styles.header}>Olá, {userName}</Text>
 
-      {/* Botão para abrir Dados Pessoais */}
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => setShowPersonalData(true)}
@@ -417,19 +401,16 @@ const SettingsScreen = () => {
         <Text style={styles.menuText}>Dados pessoais</Text>
       </TouchableOpacity>
 
-      {/* Suporte */}
       <View style={styles.menuItem}>
         <Ionicons name="chatbubble-ellipses-outline" size={24} color="white" />
         <Text style={styles.menuText}>Suporte</Text>
       </View>
 
-      {/* Perguntas Frequentes */}
       <View style={styles.menuItem}>
         <Ionicons name="help-circle-outline" size={24} color="white" />
         <Text style={styles.menuText}>Perguntas frequentes</Text>
       </View>
 
-      {/* Informações com Accordion */}
       <View>
   <TouchableOpacity
     style={styles.menuItem}
@@ -448,7 +429,7 @@ const SettingsScreen = () => {
     <View>
     <TouchableOpacity
       style={styles.menuItem}
-      onPress={() => setShowPrivacyPolicy(true)} // Mostra a política de privacidade ao clicar
+      onPress={() => setShowPrivacyPolicy(true)}
     >
       <Ionicons name="document-outline" size={20} color="white" />
       <Text style={styles.menuText}>Política de Privacidade</Text>
@@ -457,7 +438,6 @@ const SettingsScreen = () => {
     {isExpanded && (
   <View>
 
-    {/* Exibição da Política de Privacidade */}
     {showPrivacyPolicy && (
       <View style={[styles.container, { backgroundColor: 'white', padding: 20 }]}>
         <Text style={[styles.policyText, { color: 'black' }]}>
@@ -477,10 +457,9 @@ const SettingsScreen = () => {
           (Inclua o restante do texto aqui)
         </Text>
 
-        {/* Botão para voltar */}
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => setShowPrivacyPolicy(false)} // Volta ao menu principal
+          onPress={() => setShowPrivacyPolicy(false)}
         >
           <Ionicons name="arrow-back-outline" size={20} color="white" />
           <Text style={styles.backButtonText}>Voltar</Text>
@@ -493,10 +472,7 @@ const SettingsScreen = () => {
   )}
 </View>
 
-{/* Linha separadora acima do item "Sair" */}
 <View style={styles.separator} />
-
-      {/* Botão de Sair */}
       <TouchableOpacity
         style={styles.menuItem}
         onPress={handleLogout}
@@ -505,7 +481,6 @@ const SettingsScreen = () => {
         <Text style={styles.menuText}>Sair</Text>
       </TouchableOpacity>
 
-      {/* Modal de Logout */}
       <Modal
         transparent={true}
         visible={isModalVisible}
@@ -532,9 +507,7 @@ const SettingsScreen = () => {
   );
 };
 
-// Tela de Eventos
 const EventsScreen = () => {
-  // Lista inicial de eventos
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -542,7 +515,7 @@ const EventsScreen = () => {
       category: "Inteligência Emocional",
       title: "Como fazer amigos e influenciar pessoas",
       location: "Sala 2",
-      color: "#9c27b0", // Roxo
+      color: "#9c27b0",
     },
     {
       id: 2,
@@ -550,7 +523,7 @@ const EventsScreen = () => {
       category: "Design",
       title: "O futuro do Design - Projetando a próxima geração",
       location: "Auditório 3",
-      color: "#2196f3", // Azul
+      color: "#2196f3",
     },
     {
       id: 3,
@@ -558,12 +531,12 @@ const EventsScreen = () => {
       category: "Marketing",
       title: "Pesquisa e Inovação",
       location: "Auditório 2",
-      color: "#ff9800", // Laranja
+      color: "#ff9800",
     },
   ]);
 
-  const [selectedCategory, setSelectedCategory] = useState("Design"); // Categoria ativa
-  const [modalVisible, setModalVisible] = useState(false); // Controle do modal de cadastro
+  const [selectedCategory, setSelectedCategory] = useState("Design");
+  const [modalVisible, setModalVisible] = useState(false);
   const [newEvent, setNewEvent] = useState({
     time: "",
     category: "",
@@ -572,7 +545,6 @@ const EventsScreen = () => {
     color: "",
   });
 
-  // Função para adicionar um evento
   const addEvent = () => {
     if (
       newEvent.time &&
@@ -585,19 +557,17 @@ const EventsScreen = () => {
         ...events,
         { ...newEvent, id: events.length + 1 },
       ]);
-      setModalVisible(false); // Fechar o modal
-      setNewEvent({ time: "", category: "", title: "", location: "", color: "" }); // Resetar formulário
+      setModalVisible(false);
+      setNewEvent({ time: "", category: "", title: "", location: "", color: "" });
     }
   };
 
-  // Filtro de eventos pela categoria selecionada
   const filteredEvents = events.filter(
     (event) => event.category === selectedCategory
   );
 
   return (
     <View style={styles.containerEvents}>
-      {/* Header com categorias */}
       <View style={styles.headerEvents}>
         {["Tecnologia", "Design", "Marketing"].map((category) => (
           <TouchableOpacity
@@ -616,7 +586,6 @@ const EventsScreen = () => {
         ))}
       </View>
 
-      {/* Botão para adicionar evento */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => setModalVisible(true)}
@@ -624,7 +593,6 @@ const EventsScreen = () => {
         <Text style={styles.addButtonText}>+ Adicionar Evento</Text>
       </TouchableOpacity>
 
-      {/* Lista de eventos */}
       <ScrollView>
         {filteredEvents.map((event) => (
           <View
@@ -648,7 +616,6 @@ const EventsScreen = () => {
         ))}
       </ScrollView>
 
-      {/* Modal para cadastro de eventos */}
       <Modal visible={modalVisible} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitleEvent}>Cadastrar Novo Evento</Text>
@@ -692,7 +659,6 @@ const EventsScreen = () => {
   );
 };
 
-// Navegação Principal
 const MainTabNavigator = () => {
   return (
     <Tab.Navigator
@@ -714,8 +680,8 @@ const MainTabNavigator = () => {
         
           return <IconComponent name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#07284B',  // Cor para o ícone ativo
-        tabBarInactiveTintColor: 'gray',   // Cor para o ícone inativo
+        tabBarActiveTintColor: '#07284B',
+        tabBarInactiveTintColor: 'gray',
         tabBarShowLabel: false,            
       })}
     >
@@ -727,7 +693,6 @@ const MainTabNavigator = () => {
   );
 };
 
-// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -765,9 +730,9 @@ const styles = StyleSheet.create({
   },
   separator: {
     borderBottomWidth: 1,
-    borderBottomColor: "#fff",  // Cor da linha de separação
-    marginHorizontal: 10,  // Espaçamento das bordas
-    marginTop: 20,  // Adiciona um pequeno espaço acima
+    borderBottomColor: "#fff",
+    marginHorizontal: 10,
+    marginTop: 20,
   },
   profileImage: {
     width: 120,
@@ -846,8 +811,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   informationItem: {
-    borderBottomWidth: 1,  // Adiciona a linha apenas para o item Informações
-    borderBottomColor: "#fff",  // Define a cor da linha
+    borderBottomWidth: 1,
+    borderBottomColor: "#fff",
   },
   modalButton: {
     paddingVertical: 12,
@@ -1137,9 +1102,5 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
 });
-
-
-
-
 
 export default MainTabNavigator;
