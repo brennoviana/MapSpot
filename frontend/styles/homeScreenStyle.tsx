@@ -282,6 +282,7 @@ const styles = StyleSheet.create({
       color: '#666',
     },
     containerEvents: {
+      paddingTop: 30,
       flex: 1,
       backgroundColor: "#f5f5f5",
     },
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
       shadowRadius: 3,
       elevation: 2,
     },
-    eventTime: {
+    eventDate: {
       fontSize: 14,
       fontWeight: "bold",
       color: "#555",

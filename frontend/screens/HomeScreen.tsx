@@ -20,6 +20,7 @@ import 'react-native-get-random-values';
 import { AntDesign } from '@expo/vector-icons';
 import { AirbnbRating } from 'react-native-ratings';
 import styles from '../styles/homeScreenStyle';
+import DateTimePicker from "react-native-modal-datetime-picker";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'home'>;
 
@@ -508,64 +509,69 @@ const SettingsScreen = () => {
   );
 };
 
-const EventsScreen = () => {
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      time: "12:30 - 14:00",
-      category: "Inteligência Emocional",
-      title: "Como fazer amigos e influenciar pessoas",
-      location: "Sala 2",
-      color: "#9c27b0",
-    },
-    {
-      id: 2,
-      time: "14:30 - 17:00",
-      category: "Design",
-      title: "O futuro do Design - Projetando a próxima geração",
-      location: "Auditório 3",
-      color: "#2196f3",
-    },
-    {
-      id: 3,
-      time: "14:30 - 17:00",
-      category: "Marketing",
-      title: "Pesquisa e Inovação",
-      location: "Auditório 2",
-      color: "#ff9800",
-    },
-  ]);
+type Event = {
+  id: number;
+  date: string;
+  title: string;
+  location: string;
+};
 
+const EventsScreen = () => {
+  const [events, setEvents] = useState<Event[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Design");
   const [modalVisible, setModalVisible] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    time: "",
-    category: "",
+  const [newEvent, setNewEvent] = useState<Omit<Event, "id">>({
+    date: "",
     title: "",
     location: "",
-    color: "",
   });
 
-  const addEvent = () => {
-    if (
-      newEvent.time &&
-      newEvent.category &&
-      newEvent.title &&
-      newEvent.location &&
-      newEvent.color
-    ) {
-      setEvents([
-        ...events,
-        { ...newEvent, id: events.length + 1 },
-      ]);
-      setModalVisible(false);
-      setNewEvent({ time: "", category: "", title: "", location: "", color: "" });
-    }
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
   };
 
-  const filteredEvents = events.filter(
-    (event) => event.category === selectedCategory
-  );
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date: Date) => {
+    setNewEvent({ ...newEvent, date: date.toISOString().split("T")[0] });
+    hideDatePicker();
+  };
+
+
+  const addEvent = async () => {
+    if (newEvent.date && newEvent.title && newEvent.location) {
+      try {
+        const response = await fetch(`${config.API_URL}/api/v1/event`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newEvent),
+        });
+
+        if (response.ok) {
+          const createdEvent: Event = await response.json();
+          setEvents([...events, { ...createdEvent, id: events.length + 1 }]);
+          setModalVisible(false);
+          setNewEvent({
+            date: "",
+            title: "",
+            location: "",
+          });
+        } else {
+          console.error("Failed to add event", await response.text());
+        }
+      } catch (error) {
+        console.error("Error adding event:", error);
+      }
+    } else {
+      alert("Por favor, preencha todos os campos!");
+    }
+  };
 
   return (
     <View style={styles.containerEvents}>
@@ -595,24 +601,11 @@ const EventsScreen = () => {
       </TouchableOpacity>
 
       <ScrollView>
-        {filteredEvents.map((event) => (
-          <View
-            key={event.id}
-            style={[styles.eventCard, { borderLeftColor: event.color }]}
-          >
-            <Text style={styles.eventTime}>{event.time}</Text>
-            <View style={styles.eventDetails}>
-              <Text
-                style={[
-                  styles.categoryLabel,
-                  { backgroundColor: event.color },
-                ]}
-              >
-                {event.category}
-              </Text>
-              <Text style={styles.eventTitle}>{event.title}</Text>
-              <Text style={styles.eventLocation}>📍 {event.location}</Text>
-            </View>
+        {events.map((event) => (
+          <View key={event.id} style={styles.eventCard}>
+            <Text style={styles.eventDate}>{event.date}</Text>
+            <Text style={styles.eventTitle}>{event.title}</Text>
+            <Text style={styles.eventLocation}>📍 {event.location}</Text>
           </View>
         ))}
       </ScrollView>
@@ -620,20 +613,17 @@ const EventsScreen = () => {
       <Modal visible={modalVisible} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitleEvent}>Cadastrar Novo Evento</Text>
-          <TextInput
-            placeholder="Horário (ex: 12:30 - 14:00)"
-            style={styles.inputEvent}
-            value={newEvent.time}
-            onChangeText={(text) => setNewEvent({ ...newEvent, time: text })}
+          <TouchableOpacity onPress={showDatePicker} style={styles.inputEvent}>
+            <Text>{newEvent.date || "Selecione a Data"}</Text>
+          </TouchableOpacity>
+
+          <DateTimePicker
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleConfirm}
+            onCancel={hideDatePicker}
           />
-          <TextInput
-            placeholder="Categoria (ex: Design)"
-            style={styles.inputEvent}
-            value={newEvent.category}
-            onChangeText={(text) =>
-              setNewEvent({ ...newEvent, category: text })
-            }
-          />
+
           <TextInput
             placeholder="Título"
             style={styles.inputEvent}
