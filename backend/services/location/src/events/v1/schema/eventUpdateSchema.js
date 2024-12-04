@@ -5,9 +5,7 @@ const eventUpdateSchema = Joi.object({
   description: Joi.string().optional(),
   date: Joi.date().optional(),
   location: Joi.string().optional(),
-  ticketsAvailable: Joi.number().min(0).optional(),
-  ticketPrice: Joi.number().min(0).optional(),
-  organizer: Joi.string().optional(),
+  category: Joi.string().optional(),
 });
 
 export { eventUpdateSchema };

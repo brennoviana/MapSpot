@@ -16,17 +16,11 @@ const eventSchema = new mongoose.Schema(
     },
     location: {
       type: String,
+      required: true
     },
-    ticketsAvailable: {
-      type: Number,
-      min: 0,
-    },
-    ticketPrice: {
-      type: Number,
-      min: 0,
-    },
-    organizer: {
+    category: {
       type: String,
+      required: true
     },
     createdAt: {
       type: Date,

@@ -5,9 +5,7 @@ const eventCreateSchema = Joi.object({
   description: Joi.string().optional(),
   date: Joi.date().required(),
   location: Joi.string().optional(),
-  ticketsAvailable: Joi.number().min(0).optional(),
-  ticketPrice: Joi.number().min(0).optional(),
-  organizer: Joi.string().optional(),
+  category: Joi.string().optional(),
 });
 
 export { eventCreateSchema };
