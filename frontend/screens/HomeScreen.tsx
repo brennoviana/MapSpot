@@ -160,11 +160,6 @@ const HomeScreen = () => {
             }}        
             fetchDetails={true}
             enablePoweredByContainer={false}
-            requestUrl={{
-              url:
-                'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
-              useOnPlatform: 'web',
-            }}
           />
         </View>
       </View>
@@ -513,16 +508,22 @@ type Event = {
   date: string;
   title: string;
   location: string;
+  category: string;
+  description: string;
 };
 
 const EventsScreen = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Design");
   const [modalVisible, setModalVisible] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [newEvent, setNewEvent] = useState<Omit<Event, "id">>({
     date: "",
     title: "",
     location: "",
+    category: "",
+    description: "",
   });
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -566,7 +567,8 @@ const EventsScreen = () => {
   };
 
   const handleConfirm = (date: Date) => {
-    setNewEvent({ ...newEvent, date: date.toISOString().split("T")[0] });
+    const formattedDate = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    setNewEvent({ ...newEvent, date: formattedDate });
     hideDatePicker();
   };
 
@@ -574,6 +576,8 @@ const EventsScreen = () => {
     if (newEvent.date && newEvent.title && newEvent.location) {
       try {
         const userToken = await AsyncStorage.getItem("userToken");
+        const formattedDate = `${newEvent.date.split('/')[2]}-${newEvent.date.split('/')[1]}-${newEvent.date.split('/')[0]}`;
+        console.log(newEvent);
 
         const response = await fetch(`${config.API_URL_LOCATION}/api/v1/event`, {
           method: "POST",
@@ -581,7 +585,13 @@ const EventsScreen = () => {
             "Content-Type": "application/json",
             authorization: `Bearer ${userToken}`,
           },
-          body: JSON.stringify(newEvent),
+          body: JSON.stringify({
+            date: formattedDate,
+            title: newEvent.title,
+            location: newEvent.location,
+            category: newEvent.category,
+            description: newEvent.description
+          }),
         });
 
         console.log(response)
@@ -594,7 +604,10 @@ const EventsScreen = () => {
             date: "",
             title: "",
             location: "",
+            category: "",
+            description: "",
           });
+          fetchEvents();
         } else {
           console.error("Failed to add event", await response.text());
         }
@@ -634,14 +647,20 @@ const EventsScreen = () => {
       </TouchableOpacity>
 
       <ScrollView>
-        {events.map((event) => (
-          <View key={event.id} style={styles.eventCard}>
-            <Text style={styles.eventDate}>{event.date}</Text>
-            <Text style={styles.eventTitle}>{event.title}</Text>
-            <Text style={styles.eventLocation}>📍 {event.location}</Text>
-          </View>
-        ))}
-      </ScrollView>
+  {events.filter((event) => event.category === selectedCategory).length > 0 ? (
+    events
+      .filter((event) => event.category === selectedCategory)
+      .map((event) => (
+        <View key={event.id} style={styles.eventCard}>
+          <Text style={styles.eventDate}>{event.date}</Text>
+          <Text style={styles.eventTitle}>{event.title}</Text>
+          <Text style={styles.eventLocation}>📍{event.location}</Text>
+        </View>
+      ))
+  ) : (
+    <Text style={styles.noEventText}>Nenhum evento encontrado nesta categoria.</Text>
+  )}
+</ScrollView>
 
       <Modal visible={modalVisible} animationType="slide">
         <View style={styles.modalContainer}>
@@ -663,14 +682,65 @@ const EventsScreen = () => {
             value={newEvent.title}
             onChangeText={(text) => setNewEvent({ ...newEvent, title: text })}
           />
-          <TextInput
-            placeholder="Localização"
+          <GooglePlacesAutocomplete
+                placeholder="Busque por estabelecimentos"
+                query={{
+                  key: config.GOOGLE_API_KEY,
+                  language: 'pt-BR',
+                  components: 'country:br',
+                  types: 'establishment',
+                  location: `${userLocation?.coordinates.lat},${userLocation?.coordinates.lng}`,
+                  radius: 5000,
+                }}
+                fields="formatted_address,name,geometry,vicinity,place_id"
+                onFail={(error) => console.log(error)}
+                renderDescription={(row) => {
+                  const name = row.structured_formatting.main_text;
+                  const addressParts = row.structured_formatting.secondary_text.split(',');
+                  const cityState =
+                    addressParts.length > 1
+                      ? `${addressParts[addressParts.length - 2]}, ${addressParts[addressParts.length - 1]}`
+                      : '';
+                  return `${name} - ${cityState}`;
+                }}
+                fetchDetails={true}
+                enablePoweredByContainer={false}
+                onPress={(data, details = null) => {
+                  const formattedAddress = details?.formatted_address || '';
+                  setNewEvent({ ...newEvent, location: formattedAddress });
+                }}
+                styles={{
+                  textInput: {
+                    ...styles.inputEvent,
+                    marginBottom: 5,
+                  },
+                  listView: {
+                    maxHeight: 150,
+                    marginBottom: 5,
+                  },
+                  container: {
+                    flex: 0,
+                    marginBottom: 5,
+                  },
+                }}
+              />
+
+          <TextInput 
             style={styles.inputEvent}
-            value={newEvent.location}
-            onChangeText={(text) =>
-              setNewEvent({ ...newEvent, location: text })
-            }
+            placeholder='Categoria'
+            value={newEvent.category}
+            onChangeText={(text) => 
+            setNewEvent({ ...newEvent, category: text })}
           />
+
+          <TextInput 
+            style={styles.inputEvent}
+            placeholder='Descrição'
+            value={newEvent.description}
+            onChangeText={(text) => 
+            setNewEvent({ ...newEvent, description: text })}
+          />
+
           <Button title="Salvar" onPress={addEvent} />
           <Button
             title="Cancelar"

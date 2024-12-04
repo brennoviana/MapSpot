@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
       top:0,
       backgroundColor: '#001946',
       width: '100%',
-      height: 130,
+      height: 150,
       paddingTop: 35,
       paddingHorizontal: 20,
       paddingBottom: 30,
@@ -292,7 +292,15 @@ const styles = StyleSheet.create({
       paddingVertical: 10,
       backgroundColor: "#ffffff",
       borderBottomWidth: 1,
+      marginTop:20,
+      height: 50,
       borderBottomColor: "#ddd",
+    },
+    noEventText: {
+      textAlign: "center",
+      marginTop: 20,
+      fontSize: 18,
+      color: "#777",
     },
     tab: {
       fontSize: 16,
@@ -325,6 +333,7 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.1,
       shadowRadius: 3,
       elevation: 2,
+      height: 100,
     },
     eventDate: {
       fontSize: 14,
@@ -335,7 +344,7 @@ const styles = StyleSheet.create({
     eventDetails: {
       flex: 1,
     },
-    categoryLabel: {
+    eventCategory: {
       alignSelf: "flex-start",
       fontSize: 12,
       fontWeight: "bold",
@@ -344,6 +353,19 @@ const styles = StyleSheet.create({
       paddingHorizontal: 8,
       borderRadius: 4,
       marginBottom: 5,
+    },
+    eventDescription: {
+      marginLeft: 10,
+      fontSize: 14,
+      color: '#333',
+    },
+    categoryHeader: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginVertical: 10,
+      backgroundColor: '#f0f0f0',
+      padding: 5,
+      textAlign: 'center',
     },
     eventTitle: {
       fontSize: 16,
