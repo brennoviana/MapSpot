@@ -14,7 +14,11 @@ import MapView, { Marker } from "react-native-maps";
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { GooglePlacesAutocomplete, GooglePlaceData, GooglePlaceDetail } from "react-native-google-places-autocomplete";
+import * as Location from 'expo-location';
+import { Linking } from 'react-native';
 import 'react-native-get-random-values';
+import { AntDesign } from '@expo/vector-icons';
+import { AirbnbRating } from 'react-native-ratings';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'home'>;
 
@@ -28,15 +32,19 @@ type Location = {
     lng: number;
   };
   photoUrl: string;
-  establishmentPhotoUrl?: string;
+  establishmentPhotoUrl?: string ;
+  rating?: number;
+  userRatingsTotal?: number;
+  website?: string;
 };
 
 // Tela Home
 const HomeScreen = () => {
   const [userName, setUserName] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [userLocation, setUserLocation] = useState<Location | null>(null);
 
-
+  // Função para buscar o nome do usuário
   const fetchUserData = async () => {
     try {
       const storedUserName = await AsyncStorage.getItem("username");
@@ -48,94 +56,157 @@ const HomeScreen = () => {
 
   useEffect(() => {
     fetchUserData();
+    getUserLocation(); // Chama a função para obter a localização do usuário
   }, []);
 
+  // Função para pegar a localização atual do usuário
+  const getUserLocation = async () => {
+    const { status } = await Location.getForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permissão para acessar a localização negada');
+        return;
+      }
+    }
+
+    const location = await Location.getCurrentPositionAsync({});
+    setUserLocation({
+      name: 'Sua Localização',
+      address: 'Localização atual',
+      coordinates: {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+      },
+      photoUrl: '', // Você pode adicionar uma imagem aqui se necessário
+    });
+  };
+
+  // Função para buscar detalhes de um lugar
   const fetchPlaceDetails = async (placeId: string) => {
     const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${config.GOOGLE_API_KEY}`);
     const data = await response.json();
     
-    if (data.result && data.result.photos && data.result.photos.length > 0) {
-      const photoReference = data.result.photos[0].photo_reference;
-      const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${config.GOOGLE_API_KEY}`;
-      return photoUrl;
+    if (data.result) {
+      const placeDetails = {
+        photoUrl: '',
+        rating: data.result.rating || null, // Média das avaliações
+        userRatingsTotal: data.result.user_ratings_total || 0, // Número de avaliações
+        website: data.result.website || null, // URL do site
+      };
+  
+      // Busca a foto do local, se disponível
+      if (data.result.photos && data.result.photos.length > 0) {
+        const photoReference = data.result.photos[0].photo_reference;
+        placeDetails.photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${config.GOOGLE_API_KEY}`;
+      }
+      
+      return placeDetails;
     }
-    return '';
+    return null;
   };
 
   return (
     <View style={styles.container}>
       {/* Barra de busca */}
       <View style={styles.searchContainer}>
-      <Text style={styles.greeting}>{userName}, Qual seu próximo destino?</Text>
-      <View style={styles.searchBar}>
-      <GooglePlacesAutocomplete
-        placeholder="Busque por estabelecimentos"
-        query={{
-          key: config.GOOGLE_API_KEY,
-          language: 'pt-BR',
-          components: 'country:br',
-          types: 'establishment',
-        }}
-        fields="formatted_address,name,geometry,vicinity,place_id"
-        onPress={async (data, details = null) => {
-          console.log(details);
-          if (details?.geometry?.location) {
-            let establishmentPhotoUrl = '';
-            
-            if (details.place_id) {
-              establishmentPhotoUrl = await fetchPlaceDetails(details.place_id);
-            }
+        <Text style={styles.greeting}>{userName}, Qual seu próximo destino?</Text>
+        <View style={styles.searchBar}>
+          <GooglePlacesAutocomplete
+            placeholder="Busque por estabelecimentos"
+            query={{
+              key: config.GOOGLE_API_KEY,
+              language: 'pt-BR',
+              components: 'country:br',
+              types: 'establishment',
+              location: `${userLocation?.coordinates.lat},${userLocation?.coordinates.lng}`,
+              radius: 5000,
+            }}
+            fields="formatted_address,name,geometry,vicinity,place_id"
+            onPress={async (data, details = null) => {
+              console.log(details);
+              if (details?.geometry?.location) {
+                let establishmentPhotoUrl = '';
+                let rating = null;
+                let userRatingsTotal = 0;
+                let website = null;
+                
+                if (details.place_id) {
+                  const placeDetails = await fetchPlaceDetails(details.place_id);
+                  if (placeDetails) {
+                    establishmentPhotoUrl = placeDetails.photoUrl || '';
+                    rating = placeDetails.rating;
+                    userRatingsTotal = placeDetails.userRatingsTotal;
+                    website = placeDetails.website;
+                  }
+                }
 
-            setSelectedLocation({
-              name: details.name || data.description,
-              address: details.formatted_address || details.vicinity || 'Endereço não disponível',
-              coordinates: {
-                lat: details.geometry.location.lat,
-                lng: details.geometry.location.lng,
-              },
-              photoUrl: details.icon ?? '',
-              establishmentPhotoUrl,
-            });
-          }
-        }}
-        onFail={(error) => console.log(error)}
-        renderDescription={(row) => {
-          const name = row.structured_formatting.main_text;
-          // Divide o endereço completo e pega cidade e estado
-          const addressParts = row.structured_formatting.secondary_text.split(',');
-          // Exibe nome do estabelecimento e cidade/estado
-          const cityState = addressParts.length > 1 ? `${addressParts[addressParts.length - 2]}, ${addressParts[addressParts.length - 1]}` : '';
-          return `${name} - ${cityState}`;
-        }}        
-        fetchDetails={true}
-        enablePoweredByContainer={false}
-        requestUrl={{
-          url:
-            'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
-          useOnPlatform: 'web',
-        }}
-      />
+                setSelectedLocation({
+                  name: details.name || data.description,
+                  address: details.formatted_address || details.vicinity || 'Endereço não disponível',
+                  coordinates: {
+                    lat: details.geometry.location.lat,
+                    lng: details.geometry.location.lng,
+                  },
+                  photoUrl: details.icon ?? '',
+                  establishmentPhotoUrl,
+                  rating,
+                  userRatingsTotal,
+                  website,
+                });
+              }
+            }}
+            onFail={(error) => console.log(error)}
+            renderDescription={(row) => {
+              const name = row.structured_formatting.main_text;
+              // Divide o endereço completo e pega cidade e estado
+              const addressParts = row.structured_formatting.secondary_text.split(',');
+              // Exibe nome do estabelecimento e cidade/estado
+              const cityState = addressParts.length > 1 ? `${addressParts[addressParts.length - 2]}, ${addressParts[addressParts.length - 1]}` : '';
+              return `${name} - ${cityState}`;
+            }}        
+            fetchDetails={true}
+            enablePoweredByContainer={false}
+            requestUrl={{
+              url:
+                'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
+              useOnPlatform: 'web',
+            }}
+          />
+        </View>
       </View>
-    </View>
 
       {/* Mapa */}
       <MapView
         style={styles.map}
         region={{
-          latitude: -22.9333,
-          longitude: -42.8167,
+          latitude: selectedLocation?.coordinates.lat || userLocation?.coordinates.lat ||  -22.9333,
+          longitude: selectedLocation?.coordinates.lng || userLocation?.coordinates.lng || -42.8167,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
       >
-        <Marker
-          coordinate={{
-            latitude: -23.5505,
-            longitude: -46.6333,
-          }}
-          title="Sua localização"
-          description="Você está aqui!"
-        />
+        {userLocation && (
+          <Marker
+            coordinate={{
+              latitude: userLocation.coordinates.lat,
+              longitude: userLocation.coordinates.lng,
+            }}
+            title="Sua localização"
+            description="Você está aqui!"
+          />
+        )}
+
+        {selectedLocation && (
+          <Marker
+            coordinate={{
+              latitude: selectedLocation.coordinates.lat,
+              longitude: selectedLocation.coordinates.lng,
+            }}
+            title={selectedLocation.name}
+            description={selectedLocation.address}
+          />
+        )}
       </MapView>
       
       {/* Detalhes do campo selecionado */}
@@ -147,16 +218,36 @@ const HomeScreen = () => {
               style={{ width: '100%', height: 100, marginTop: 10, marginBottom: 10, borderRadius: 8 }}
             />
           )}
+
           <Text style={styles.fieldName}>
             {selectedLocation.name}
             <Text>  </Text>
             {selectedLocation.photoUrl && (
               <Image
                 source={{ uri: selectedLocation.photoUrl }}
-                style={{ width: 20, height: 20, marginLeft: 5 }}
+                style={{ width: 25, height: 30, objectFit: 'cover' }}
               />
             )}
           </Text>
+
+          {selectedLocation.rating !== null && (
+            <View style={styles.ratingContainer}>
+              <AirbnbRating
+                count={5}
+                defaultRating={selectedLocation.rating}
+                size={20}
+                isDisabled
+                showRating={false}
+              />
+            <Text style={styles.fieldRating}>
+              {selectedLocation.rating} ({selectedLocation.userRatingsTotal} avaliações)
+              {selectedLocation.website && (
+              <Text style={styles.fieldWebsite}>
+                <AntDesign name="link" size={16} color="blue" onPress={() => Linking.openURL(selectedLocation.website ?? '')} />
+              </Text> )}
+            </Text>
+            </View>
+          )}
           <Text style={styles.fieldAddress}>{selectedLocation.address}</Text>
           <Text style={styles.fieldCoordinates}>
             Lat: {selectedLocation.coordinates.lat}, Lng: {selectedLocation.coordinates.lng}
@@ -882,9 +973,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   fieldName: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 5,
   },
   fieldAddress: {
     fontSize: 14,
@@ -1032,7 +1122,20 @@ const styles = StyleSheet.create({
   searchBar: {
     height: 500,
 
-  }
+  },
+  fieldRating: {
+    fontSize: 14,
+    color: 'gray',
+    opacity: 0.5,
+  },
+  fieldReviews: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  fieldWebsite: {
+    fontSize: 14,
+    color: 'gray',
+  },
 });
 
 
