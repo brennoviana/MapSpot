@@ -20,34 +20,100 @@ type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'home'>;
 
 const Tab = createBottomTabNavigator();
 
+type Location = {
+  name: string;
+  address: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  photoUrl: string;
+  establishmentPhotoUrl?: string;
+};
+
 // Tela Home
 const HomeScreen = () => {
-  const [search, setSearch] = useState('');
-  const [results, setResults] = useState([
-    // Lista inicial de resultados fictícios, removível quando a integração estiver pronta
-    { id: 1, name: 'Av. Roberto Silveira, 437 - Maricá, 14', distance: '500m', rating: 5 },
-    { id: 2, name: 'Av. Roberto Silveira, 487 -  Maricá', distance: '800m', rating: 4 },
-  ]);
+  const [userName, setUserName] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+
+
+  const fetchUserData = async () => {
+    try {
+      const storedUserName = await AsyncStorage.getItem("username");
+      setUserName(storedUserName ?? "");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchPlaceDetails = async (placeId: string) => {
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${config.GOOGLE_API_KEY}`);
+    const data = await response.json();
+    
+    if (data.result && data.result.photos && data.result.photos.length > 0) {
+      const photoReference = data.result.photos[0].photo_reference;
+      const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${config.GOOGLE_API_KEY}`;
+      return photoUrl;
+    }
+    return '';
+  };
 
   return (
     <View style={styles.container}>
       {/* Barra de busca */}
       <View style={styles.searchContainer}>
-      <Text style={styles.greeting}>Usuário, Qual seu próximo destino?</Text>
+      <Text style={styles.greeting}>{userName}, Qual seu próximo destino?</Text>
       <View style={styles.searchBar}>
       <GooglePlacesAutocomplete
-        placeholder="Search"
+        placeholder="Busque por estabelecimentos"
         query={{
           key: config.GOOGLE_API_KEY,
-          language: 'pt-BR', // language of the results
+          language: 'pt-BR',
+          components: 'country:br',
+          types: 'establishment',
         }}
-        onPress={(data, details = null) => console.log(data)}
+        fields="formatted_address,name,geometry,vicinity,place_id"
+        onPress={async (data, details = null) => {
+          console.log(details);
+          if (details?.geometry?.location) {
+            let establishmentPhotoUrl = '';
+            
+            if (details.place_id) {
+              establishmentPhotoUrl = await fetchPlaceDetails(details.place_id);
+            }
+
+            setSelectedLocation({
+              name: details.name || data.description,
+              address: details.formatted_address || details.vicinity || 'Endereço não disponível',
+              coordinates: {
+                lat: details.geometry.location.lat,
+                lng: details.geometry.location.lng,
+              },
+              photoUrl: details.icon ?? '',
+              establishmentPhotoUrl,
+            });
+          }
+        }}
         onFail={(error) => console.log(error)}
+        renderDescription={(row) => {
+          const name = row.structured_formatting.main_text;
+          // Divide o endereço completo e pega cidade e estado
+          const addressParts = row.structured_formatting.secondary_text.split(',');
+          // Exibe nome do estabelecimento e cidade/estado
+          const cityState = addressParts.length > 1 ? `${addressParts[addressParts.length - 2]}, ${addressParts[addressParts.length - 1]}` : '';
+          return `${name} - ${cityState}`;
+        }}        
+        fetchDetails={true}
+        enablePoweredByContainer={false}
         requestUrl={{
           url:
             'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
           useOnPlatform: 'web',
-        }} // this in only required for use on the web. See https://git.io/JflFv more for details.
+        }}
       />
       </View>
     </View>
@@ -73,33 +139,34 @@ const HomeScreen = () => {
       </MapView>
       
       {/* Detalhes do campo selecionado */}
-      <View style={styles.fieldDetails}>
-        <Image
-          source={{ uri: 'https://via.placeholder.com/60' }} // Imagem de exemplo, trocar na futura integração
-          style={styles.fieldImage}
-        />
-        <View style={styles.fieldInfo}>
-          <Text style={styles.fieldName}>Endereço 1 - Rua Prefeito Joaquim Mendes, 79</Text>
-          <View style={styles.ratingContainer}>
-            {[...Array(5)].map((_, index) => (
-              <Icon key={index} name="star" size={16} color="#FFD700" />
-            ))}
-            <Text style={styles.reviewCount}>(123 avaliações)</Text> {/* Número fictício */}
-          </View>
+      {selectedLocation && (
+        <View style={styles.fieldDetails}>
+          {selectedLocation.establishmentPhotoUrl && (
+            <Image
+              source={{ uri: selectedLocation.establishmentPhotoUrl }}
+              style={{ width: '100%', height: 100, marginTop: 10, marginBottom: 10, borderRadius: 8 }}
+            />
+          )}
+          <Text style={styles.fieldName}>
+            {selectedLocation.name}
+            <Text>  </Text>
+            {selectedLocation.photoUrl && (
+              <Image
+                source={{ uri: selectedLocation.photoUrl }}
+                style={{ width: 20, height: 20, marginLeft: 5 }}
+              />
+            )}
+          </Text>
+          <Text style={styles.fieldAddress}>{selectedLocation.address}</Text>
+          <Text style={styles.fieldCoordinates}>
+            Lat: {selectedLocation.coordinates.lat}, Lng: {selectedLocation.coordinates.lng}
+          </Text>
         </View>
-      </View>
+      )}
     </View>
   );
 };
 
-// Tela Map
-const MapScreen = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Map Screen</Text>
-    </View>
-  );
-};
 
 // Tela Settings
 const SettingsScreen = () => {
@@ -562,7 +629,6 @@ const MainTabNavigator = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Events" component={EventsScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
@@ -795,31 +861,40 @@ const styles = StyleSheet.create({
   fieldDetails: {
     position: 'absolute',
     bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    left: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   fieldImage: {
     width: 60,
     height: 60,
-    borderRadius: 30,
-    marginRight: 10,
+    borderRadius: 8,
+    marginBottom: 10,
   },
   fieldInfo: {
-    flex: 1,
+    marginLeft: 10,
   },
   fieldName: {
+    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  fieldAddress: {
     fontSize: 14,
-    color: '#333',
+    color: '#555',
+    marginBottom: 5,
+  },
+  fieldCoordinates: {
+    fontSize: 12,
+    color: '#777',
+    fontStyle: 'italic',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -829,7 +904,7 @@ const styles = StyleSheet.create({
   reviewCount: {
     marginLeft: 5,
     fontSize: 12,
-    color: '#666',
+    color: '#888',
   },
   resultItem: {
     flexDirection: 'row',
