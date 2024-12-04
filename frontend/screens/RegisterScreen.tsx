@@ -240,7 +240,6 @@ const RegisterScreen: React.FC = () => {
       onRequestClose={closeModal}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          {/* ScrollView para tornar o conteúdo rolável */}
           <ScrollView style={styles.modalTextContainer}>
             <Text style={styles.modalText}>
               Termo de Consentimento para Tratamento e Armazenamento de Dados Pessoais
