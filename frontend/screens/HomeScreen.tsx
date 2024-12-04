@@ -120,7 +120,6 @@ const HomeScreen = () => {
             }}
             fields="formatted_address,name,geometry,vicinity,place_id"
             onPress={async (data, details = null) => {
-              console.log(details);
               if (details?.geometry?.location) {
                 let establishmentPhotoUrl = '';
                 let rating = null;
@@ -528,6 +527,36 @@ const EventsScreen = () => {
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
+  const fetchEvents = async () => {
+    try {
+      const userToken = await AsyncStorage.getItem("userToken");
+
+      const response = await fetch(`${config.API_URL_LOCATION}/api/v1/event`, {
+        method: 'GET',
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${userToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const eventsData: Event[] = result.data || [];
+        setEvents(eventsData);
+      } else {
+        setEvents([]);
+        console.error("Failed to fetch events", await response.text());
+      }
+    } catch (error) {
+      setEvents([]);
+      console.error("Error fetching events:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -541,21 +570,25 @@ const EventsScreen = () => {
     hideDatePicker();
   };
 
-
   const addEvent = async () => {
     if (newEvent.date && newEvent.title && newEvent.location) {
       try {
-        const response = await fetch(`${config.API_URL}/api/v1/event`, {
+        const userToken = await AsyncStorage.getItem("userToken");
+
+        const response = await fetch(`${config.API_URL_LOCATION}/api/v1/event`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${userToken}`,
           },
           body: JSON.stringify(newEvent),
         });
 
+        console.log(response)
+
         if (response.ok) {
           const createdEvent: Event = await response.json();
-          setEvents([...events, { ...createdEvent, id: events.length + 1 }]);
+          setEvents([...events, createdEvent]);
           setModalVisible(false);
           setNewEvent({
             date: "",
