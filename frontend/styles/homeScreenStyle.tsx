@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       textAlign: "center",
     },
-    inputEvent: {
+    inputEvent2: {
       borderWidth: 1,
       borderColor: "#ddd",
       padding: 10,

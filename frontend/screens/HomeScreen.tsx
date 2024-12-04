@@ -160,6 +160,9 @@ const HomeScreen = () => {
             }}        
             fetchDetails={true}
             enablePoweredByContainer={false}
+          textInputProps={{
+            placeholderTextColor: '#000000',
+          }}
           />
         </View>
       </View>
@@ -622,9 +625,9 @@ const EventsScreen = () => {
   return (
     <View style={styles.containerEvents}>
       <View style={styles.headerEvents}>
-        {["Tecnologia", "Design", "Marketing"].map((category) => (
+        {["Tecnologia", "Design", "Marketing"].map((category, index) => (
           <TouchableOpacity
-            key={category}
+            key={index}
             onPress={() => setSelectedCategory(category)}
           >
             <Text
@@ -665,7 +668,7 @@ const EventsScreen = () => {
       <Modal visible={modalVisible} animationType="slide">
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitleEvent}>Cadastrar Novo Evento</Text>
-          <TouchableOpacity onPress={showDatePicker} style={styles.inputEvent}>
+          <TouchableOpacity onPress={showDatePicker} style={styles.inputEvent2}>
             <Text>{newEvent.date || "Selecione a Data"}</Text>
           </TouchableOpacity>
 
@@ -678,8 +681,9 @@ const EventsScreen = () => {
 
           <TextInput
             placeholder="Título"
-            style={styles.inputEvent}
+            style={styles.inputEvent2}
             value={newEvent.title}
+            placeholderTextColor='#000000'
             onChangeText={(text) => setNewEvent({ ...newEvent, title: text })}
           />
           <GooglePlacesAutocomplete
@@ -711,7 +715,8 @@ const EventsScreen = () => {
                 }}
                 styles={{
                   textInput: {
-                    ...styles.inputEvent,
+                    ...styles.inputEvent2,
+                    color: '#000000',
                     marginBottom: 5,
                   },
                   listView: {
@@ -723,19 +728,25 @@ const EventsScreen = () => {
                     marginBottom: 5,
                   },
                 }}
+                textInputProps={{
+                  placeholderTextColor: '#000000',
+                }}
               />
 
           <TextInput 
-            style={styles.inputEvent}
+            style={styles.inputEvent2}
             placeholder='Categoria'
+            placeholderTextColor='#000000'
             value={newEvent.category}
             onChangeText={(text) => 
-            setNewEvent({ ...newEvent, category: text })}
+              setNewEvent({ ...newEvent, category: text })}
           />
 
+
           <TextInput 
-            style={styles.inputEvent}
+            style={styles.inputEvent2}
             placeholder='Descrição'
+            placeholderTextColor='#000000'
             value={newEvent.description}
             onChangeText={(text) => 
             setNewEvent({ ...newEvent, description: text })}

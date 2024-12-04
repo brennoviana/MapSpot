@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   button: {
-    backgroundColor: '#07284B',
+    backgroundColor: '#001946',
     height: 64,
     width: '100%',
     justifyContent: 'center',
