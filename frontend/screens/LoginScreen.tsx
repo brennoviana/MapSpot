@@ -122,17 +122,6 @@ const LoginScreen: React.FC = () => {
       <TouchableOpacity>
         <Text style={styles.forgotPassword}>Esqueceu sua senha?</Text>
       </TouchableOpacity>
-
-      <Text style={styles.socialText}>Entrar com</Text>
-      <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton}>
-          <Icon name="google" size={30} color="#DB4437" style={styles.socialIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton}>
-          <Icon name="facebook" size={30} color="#4267B2" style={styles.socialIcon} />
-        </TouchableOpacity>
-      </View>
-
       <TouchableOpacity onPress={handleRegister}>
         <Text style={styles.registerText}>Não tem conta? Cadastre-se</Text>
       </TouchableOpacity>

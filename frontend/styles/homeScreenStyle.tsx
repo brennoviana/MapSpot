@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
       fontWeight: "bold",
     },
     eventCard: {
-      flexDirection: "row",
+      flexDirection: "column",
       margin: 10,
       padding: 10,
       borderLeftWidth: 5,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.1,
       shadowRadius: 3,
       elevation: 2,
-      height: 100,
+      height: 120,
     },
     eventDate: {
       fontSize: 14,

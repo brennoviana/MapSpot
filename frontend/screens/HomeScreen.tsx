@@ -433,40 +433,6 @@ const SettingsScreen = () => {
       <Ionicons name="document-outline" size={20} color="white" />
       <Text style={styles.menuText}>Política de Privacidade</Text>
     </TouchableOpacity>
-
-    {isExpanded && (
-  <View>
-
-    {showPrivacyPolicy && (
-      <View style={[styles.container, { backgroundColor: 'white', padding: 20 }]}>
-        <Text style={[styles.policyText, { color: 'black' }]}>
-          {"\n"}
-          **Termo de consentimento**
-          {"\n\n"}
-          **POLÍTICA DE PRIVACIDADE DO MAPSPOT**
-          {"\n\n"}
-          Última atualização: [inserir data]
-          {"\n\n"}
-          A sua privacidade é importante para nós. Esta Política de Privacidade explica como o MapSpot coleta, usa, compartilha e protege as suas informações, bem como as escolhas disponíveis para você em relação a esses dados.
-          {"\n\n"}
-          Ao utilizar o MapSpot, você concorda com os termos descritos nesta Política de Privacidade.
-          {"\n\n"}
-          1. Informações que coletamos
-          {"\n\n"}
-          (Inclua o restante do texto aqui)
-        </Text>
-
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setShowPrivacyPolicy(false)}
-        >
-          <Ionicons name="arrow-back-outline" size={20} color="white" />
-          <Text style={styles.backButtonText}>Voltar</Text>
-        </TouchableOpacity>
-      </View>
-    )}
-  </View>
-)}
   </View>
   )}
 </View>
@@ -545,8 +511,17 @@ const EventsScreen = () => {
 
       if (response.ok) {
         const result = await response.json();
-        const eventsData: Event[] = result.data || [];
-        setEvents(eventsData);
+        const eventsData: Event[] = (result.data || []).map((event: Event) => {
+          const date = new Date(event.date);
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+      
+          return {
+            ...event,
+            date: `${day}/${month}/${year}`,
+          };
+        });        setEvents(eventsData);
       } else {
         setEvents([]);
         console.error("Failed to fetch events", await response.text());
@@ -655,9 +630,10 @@ const EventsScreen = () => {
       .filter((event) => event.category === selectedCategory)
       .map((event) => (
         <View key={event.id} style={styles.eventCard}>
-          <Text style={styles.eventDate}>{event.date}</Text>
-          <Text style={styles.eventTitle}>{event.title}</Text>
-          <Text style={styles.eventLocation}>📍{event.location}</Text>
+          <Text style={styles.eventTitle}>{event.title}</Text><Text style={styles.eventDate}>{event.date}</Text>
+          <Text style={styles.eventLocation}>
+          📍{event.location.split(',')[0]}{'\n'}{event.location.split(',')[1]}
+          </Text>        
         </View>
       ))
   ) : (
